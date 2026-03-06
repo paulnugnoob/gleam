@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gleam Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-bg: #1a1a2e;
+      --sidebar-w: 220px;
+      --accent: #e91e8c;
+      --accent-light: #f5c6e0;
+      --bg: #f5f6fa;
+      --card-bg: #fff;
+      --text: #1a1a2e;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-brand {
+      padding: 24px 20px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-brand span { color: var(--accent); }
+    .sidebar-nav { flex: 1; padding: 8px 12px; }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: rgba(255,255,255,.65);
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all .15s;
+      cursor: pointer;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: rgba(255,255,255,.1);
+      color: #fff;
+    }
+    .sidebar-nav a.active { background: rgba(233,30,140,.25); color: var(--accent-light); }
+    .sidebar-nav svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+    .topbar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-title { font-size: 18px; font-weight: 600; }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .topbar-actions .refresh-info { font-size: 12px; color: var(--text-secondary); }
+
+    .content { padding: 24px 28px; }
+
+    /* ── Page sections ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Stats ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .stat-card .label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+    .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .stat-card .value.accent { color: var(--accent); }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toolbar input[type="text"], .toolbar select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+    }
+    .toolbar input[type="text"]:focus, .toolbar select:focus { border-color: var(--accent); }
+    .toolbar input[type="text"] { width: 260px; }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    thead th:hover { color: var(--text); }
+    thead th .sort-icon { display: inline-block; margin-left: 4px; font-size: 10px; opacity: .4; }
+    thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .1s;
+    }
+    tbody tr:hover { background: #f9fafb; }
+    tbody tr:last-child { border-bottom: none; }
+    td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
+
+    .thumb {
+      width: 48px; height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #e5e7eb;
+      display: block;
+    }
+    .thumb-placeholder {
+      width: 48px; height: 48px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 18px;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      text-transform: capitalize;
+    }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-downloading, .badge-extracting_frames { background: #dbeafe; color: #1e40af; }
+    .badge-analyzing { background: #ede9fe; color: #5b21b6; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-failed { background: #fee2e2; color: #991b1b; }
+    .badge-queued { background: #fef3c7; color: #92400e; }
+    .badge-running { background: #dbeafe; color: #1e40af; }
+
+    .platform-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .platform-tiktok { background: #000; color: #fff; }
+    .platform-youtube { background: #ff0000; color: #fff; }
+    .platform-instagram { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: #fff; }
+    .platform-video { background: #6b7280; color: #fff; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #d1177d; }
+    .btn-secondary { background: #f3f4f6; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-icon { padding: 6px; background: none; border: none; cursor: pointer; color: var(--text-secondary); border-radius: 4px; }
+    .btn-icon:hover { background: #f3f4f6; color: var(--text); }
+
+    /* ── Bulk Actions ── */
+    .bulk-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .bulk-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .bulk-section textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .bulk-section textarea:focus { border-color: var(--accent); }
+    .bulk-bar { display: flex; align-items: center; gap: 12px; }
+    .bulk-progress {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bulk-progress .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-queued { background: #fbbf24; }
+    .dot-processing { background: #3b82f6; }
+    .dot-done { background: #10b981; }
+
+    /* ── Drawer ── */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 640px;
+      max-width: 90vw;
+      background: var(--card-bg);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0,0,0,.12);
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .drawer-header h2 { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
+    .drawer-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; }
+    .drawer-close:hover { background: #f3f4f6; color: var(--text); }
+
+    .drawer-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .drawer-tab {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all .15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+    .drawer-tab:hover { color: var(--text); }
+    .drawer-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Drawer content styles */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .meta-item { }
+    .meta-item .meta-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 2px; }
+    .meta-item .meta-value { font-size: 14px; word-break: break-all; }
+    .meta-item .meta-value a { color: var(--accent); text-decoration: none; }
+    .meta-item .meta-value a:hover { text-decoration: underline; }
+
+    .mono-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(255,255,255,.12);
+      color: #cdd6f4;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.2); }
+
+    .product-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .product-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .product-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .product-card .detail { font-size: 12px; color: var(--text-secondary); margin-bottom: 3px; }
+    .product-card .match-info { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .confidence-bar {
+      display: inline-block;
+      width: 60px;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .confidence-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+
+    .score-bar {
+      display: inline-block;
+      width: 60px;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .score-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+
+    .timing-list { list-style: none; }
+    .timing-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .timing-item:last-child { border-bottom: none; }
+    .timing-stage { width: 200px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .timing-bar-wrap { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+    .timing-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width .3s; }
+    .timing-dur { width: 70px; text-align: right; color: var(--text-secondary); font-size: 12px; }
+
+    .frames-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .frame-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #e5e7eb;
+    }
+
+    /* ── Discovery ── */
+    .discovery-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .discovery-toolbar input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .discovery-toolbar input[type="text"]:focus { border-color: var(--accent); }
+    .discovery-toolbar select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+    }
+    .discovery-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .disc-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: box-shadow .15s;
+    }
+    .disc-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+    .disc-card img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: #e5e7eb;
+    }
+    .disc-card-body { padding: 12px 14px; }
+    .disc-card-body h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+    .disc-card-body .disc-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+    .disc-card-body .disc-meta span { margin-right: 12px; }
+
+    /* ── Form inputs ── */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    /* ── Loading / Empty ── */
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+      gap: 10px;
+      font-size: 14px;
+    }
+    .spinner-ring {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+    .empty-state p { margin-top: 8px; }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: var(--sidebar-bg);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      animation: toast-in .3s ease;
+      max-width: 360px;
+    }
+    .toast.error { background: #dc2626; }
+    .toast.success { background: #059669; }
+    @keyframes toast-in { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ── Skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-row { display: flex; gap: 14px; padding: 14px; border-bottom: 1px solid var(--border); }
+    .skeleton-row .sk-thumb { width: 48px; height: 48px; border-radius: 6px; }
+    .skeleton-row .sk-text { height: 14px; border-radius: 4px; }
+    .skeleton-row .sk-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+    /* ── Diff & QA ── */
+    .diff-controls {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .diff-selectors {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .diff-selectors .form-group { flex: 1; }
+    .diff-selectors select { width: 100%; }
+
+    .precision-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .precision-header {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .precision-stats {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 14px;
+    }
+    .precision-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .precision-stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .precision-bar-wrap {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 5px;
+      overflow: hidden;
+      display: flex;
+    }
+    .precision-bar-correct {
+      background: #10b981;
+      height: 100%;
+      transition: width .3s;
+    }
+    .precision-bar-wrong {
+      background: #ef4444;
+      height: 100%;
+      transition: width .3s;
+    }
+
+    .rank-delta {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .rank-delta.up { color: #10b981; }
+    .rank-delta.down { color: #ef4444; }
+    .rank-delta.same { color: var(--text-secondary); }
+    .rank-delta.new-entry { color: #6366f1; font-style: italic; font-weight: 500; }
+
+    .label-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .label-btn {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #fff;
+      transition: all .15s;
+    }
+    .label-btn:hover { border-color: #9ca3af; }
+    .label-btn.active-correct {
+      background: #d1fae5;
+      color: #065f46;
+      border-color: #10b981;
+    }
+    .label-btn.active-wrong {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #ef4444;
+    }
+    .label-btn.active-clear {
+      background: #f3f4f6;
+      color: var(--text-secondary);
+      border-color: var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span>&#10024;</span> Gleam <span>Admin</span></div>
+    <nav class="sidebar-nav">
+      <a class="active" data-page="dashboard" onclick="switchPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a data-page="discovery" onclick="switchPage('discovery')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Discovery
+      </a>
+      <a data-page="ranking" onclick="switchPage('ranking')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Ranking
+      </a>
+      <a data-page="creators" onclick="switchPage('creators')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Creators
+      </a>
+      <a data-page="diff" onclick="switchPage('diff')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M18 6l-6-3-6 3"/><path d="M18 18l-6 3-6-3"/><path d="M6 6v12"/><path d="M18 6v12"/></svg>
+        Diff &amp; QA
+      </a>
+      <a data-page="jobs" onclick="switchPage('jobs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Jobs
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <span class="refresh-info" id="refreshInfo"></span>
+        <button class="btn btn-secondary btn-sm" onclick="loadAnalyses()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Dashboard Page -->
+      <div class="page active" id="page-dashboard">
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card"><div class="label">Total Videos</div><div class="value" id="statTotal">--</div></div>
+          <div class="stat-card"><div class="label">Completed</div><div class="value" id="statCompleted">--</div></div>
+          <div class="stat-card"><div class="label">Failed</div><div class="value" id="statFailed">--</div></div>
+          <div class="stat-card"><div class="label">Products Detected</div><div class="value accent" id="statProducts">--</div></div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-section">
+          <h3>Bulk Queue Videos</h3>
+          <textarea id="bulkUrls" placeholder="Paste video URLs here, one per line..."></textarea>
+          <div class="bulk-bar">
+            <button class="btn btn-primary" onclick="bulkQueue()">Queue for Processing</button>
+            <div class="bulk-progress" id="bulkProgress" style="display:none;">
+              <span class="dot dot-queued"></span> <span id="bpQueued">0</span> queued
+              <span class="dot dot-processing"></span> <span id="bpProcessing">0</span> processing
+              <span class="dot dot-done"></span> <span id="bpDone">0</span> done
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="toolbar">
+          <input type="text" id="searchInput" placeholder="Search by title..." oninput="filterTable()">
+          <select id="statusFilter" onchange="filterTable()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="downloading">Downloading</option>
+            <option value="extracting_frames">Extracting Frames</option>
+            <option value="analyzing">Analyzing</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px"></th>
+                <th data-sort="title" onclick="sortTable('title')">Title <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="platform" onclick="sortTable('platform')">Platform <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="status" onclick="sortTable('status')">Status <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="steps" onclick="sortTable('steps')">Steps <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="products" onclick="sortTable('products')">Products <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="processingTime" onclick="sortTable('processingTime')">Time <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="createdAt" onclick="sortTable('createdAt')">Created <span class="sort-icon">&#9650;</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="9"><div class="loading-spinner"><div class="spinner-ring"></div> Loading analyses...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Discovery Page -->
+      <div class="page" id="page-discovery">
+        <div class="discovery-toolbar">
+          <input type="text" id="discoverQuery" placeholder="Search for beauty videos...">
+          <select id="discoverCategory">
+            <option value="GRWM">GRWM</option>
+            <option value="Makeup Tutorial">Makeup Tutorial</option>
+            <option value="Beauty Routine">Beauty Routine</option>
+            <option value="Get Ready With Me">Get Ready With Me</option>
+          </select>
+          <select id="discoverSort">
+            <option value="viewCount">View Count</option>
+            <option value="date">Recent</option>
+            <option value="relevance">Relevance</option>
+          </select>
+          <button class="btn btn-primary" onclick="discoverVideos()">Search</button>
+          <button class="btn btn-secondary" id="queueAllBtn" onclick="queueAllDiscovered()" style="display:none;">Queue All</button>
+        </div>
+        <div id="discoveryResults" class="discovery-results">
+          <div class="empty-state"><p>Search for beauty videos to discover and queue for analysis.</p></div>
+        </div>
+      </div>
+
+      <!-- Ranking Page -->
+      <div class="page" id="page-ranking">
+        <div class="stats-row">
+          <div class="stat-card"><div class="label">Total Creators</div><div class="value" id="rankStatTotal">--</div></div>
+          <div class="stat-card"><div class="label">Ranked Creators</div><div class="value" id="rankStatRanked">--</div></div>
+          <div class="stat-card"><div class="label">Latest Snapshot</div><div class="value" id="rankStatDate" style="font-size:16px;">--</div></div>
+          <div class="stat-card"><div class="label">Top Score</div><div class="value accent" id="rankStatTopScore">--</div></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="runRankingRefresh()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Run Full Refresh
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Handle</th>
+                <th>Display Name</th>
+                <th>Platform</th>
+                <th>Score</th>
+                <th>Format Fit</th>
+                <th>Consistency</th>
+                <th>Performance</th>
+                <th>Repeatability</th>
+              </tr>
+            </thead>
+            <tbody id="rankingTableBody">
+              <tr><td colspan="9"><div class="loading-spinner"><div class="spinner-ring"></div> Loading ranking...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Creators Page -->
+      <div class="page" id="page-creators">
+        <div class="bulk-section">
+          <h3>Add Creator</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Handle *</label>
+              <input type="text" id="creatorHandle" placeholder="@username">
+            </div>
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" id="creatorDisplayName" placeholder="Display Name">
+            </div>
+            <div class="form-group">
+              <label>Platform</label>
+              <select id="creatorPlatform">
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
+                <option value="instagram">Instagram</option>
+              </select>
+            </div>
+          </div>
+          <div class="bulk-bar">
+            <button class="btn btn-primary" onclick="addCreator()">Add Creator</button>
+          </div>
+        </div>
+
+        <div class="bulk-section">
+          <h3>Import CSV (JSON Format)</h3>
+          <textarea id="creatorsImportJson" placeholder='[{"handle":"@user","displayName":"User Name","platform":"tiktok"}]'></textarea>
+          <div class="bulk-bar">
+            <button class="btn btn-primary" onclick="importCreators()">Import</button>
+            <button class="btn btn-secondary" onclick="seedMockCreators()">Seed Mock Data</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Handle</th>
+                <th>Display Name</th>
+                <th>Platform</th>
+                <th>Source</th>
+                <th>Active</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="creatorsTableBody">
+              <tr><td colspan="6"><div class="loading-spinner"><div class="spinner-ring"></div> Loading creators...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Diff & QA Page -->
+      <div class="page" id="page-diff">
+        <div class="diff-controls">
+          <div class="diff-selectors">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Snapshot A (Previous)</label>
+              <select id="diffSnapshotA" onchange="loadDiff()"></select>
+            </div>
+            <div style="display:flex;align-items:center;padding-top:16px;font-size:18px;color:var(--text-secondary);">&#8594;</div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Snapshot B (Current)</label>
+              <select id="diffSnapshotB" onchange="loadDiff()"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="precision-card" id="precisionCard" style="display:none;">
+          <div class="precision-header">Precision@100 Report</div>
+          <div class="precision-stats">
+            <div class="precision-stat">
+              <div class="precision-stat-value" id="precLabeled">0</div>
+              <div class="precision-stat-label">Labeled</div>
+            </div>
+            <div class="precision-stat">
+              <div class="precision-stat-value" style="color:#10b981;" id="precCorrect">0</div>
+              <div class="precision-stat-label">Correct</div>
+            </div>
+            <div class="precision-stat">
+              <div class="precision-stat-value" style="color:#ef4444;" id="precWrong">0</div>
+              <div class="precision-stat-label">Wrong</div>
+            </div>
+            <div class="precision-stat">
+              <div class="precision-stat-value" style="color:var(--accent);" id="precScore">--</div>
+              <div class="precision-stat-label">Precision</div>
+            </div>
+            <div class="precision-stat">
+              <div class="precision-stat-value" id="precTotal">0</div>
+              <div class="precision-stat-label">Total in Snapshot</div>
+            </div>
+          </div>
+          <div class="precision-bar-wrap" id="precisionBarWrap" style="display:none;">
+            <div class="precision-bar-correct" id="precBarCorrect"></div>
+            <div class="precision-bar-wrong" id="precBarWrong"></div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">Rank</th>
+                <th>Handle</th>
+                <th>Display Name</th>
+                <th>Platform</th>
+                <th>Score</th>
+                <th style="width:80px;">Prev Rank</th>
+                <th style="width:80px;">Delta</th>
+                <th style="width:200px;">QA Label</th>
+              </tr>
+            </thead>
+            <tbody id="diffTableBody">
+              <tr><td colspan="8"><div class="empty-state"><p>Select snapshots to compare, or run a ranking refresh first.</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Jobs Page -->
+      <div class="page" id="page-jobs">
+        <div class="toolbar">
+          <select id="jobTypeSelect">
+            <option value="full_refresh">full_refresh</option>
+            <option value="fetch_posts">fetch_posts</option>
+            <option value="classify">classify</option>
+            <option value="aggregate">aggregate</option>
+            <option value="ranking">ranking</option>
+          </select>
+          <button class="btn btn-primary" onclick="enqueueJob()">Enqueue Job</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Finished</th>
+                <th>Error</th>
+              </tr>
+            </thead>
+            <tbody id="jobsTableBody">
+              <tr><td colspan="6"><div class="loading-spinner"><div class="spinner-ring"></div> Loading jobs...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <!-- Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h2 id="drawerTitle">Video Detail</h2>
+      <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+    </div>
+    <div class="drawer-tabs" id="drawerTabsContainer">
+      <button class="drawer-tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+      <button class="drawer-tab" data-tab="transcript" onclick="switchTab('transcript')">Transcript</button>
+      <button class="drawer-tab" data-tab="ai" onclick="switchTab('ai')">AI Analysis</button>
+      <button class="drawer-tab" data-tab="products" onclick="switchTab('products')">Products</button>
+      <button class="drawer-tab" data-tab="timing" onclick="switchTab('timing')">Timing</button>
+      <button class="drawer-tab" data-tab="frames" onclick="switchTab('frames')">Frames</button>
+    </div>
+    <div class="drawer-body">
+      <!-- Overview Tab -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="loading-spinner" id="drawerLoading"><div class="spinner-ring"></div> Loading details...</div>
+        <div id="overviewContent" style="display:none;"></div>
+      </div>
+      <!-- Transcript Tab -->
+      <div class="tab-panel" id="tab-transcript">
+        <div id="transcriptContent"></div>
+      </div>
+      <!-- AI Tab -->
+      <div class="tab-panel" id="tab-ai">
+        <div id="aiContent"></div>
+      </div>
+      <!-- Products Tab -->
+      <div class="tab-panel" id="tab-products">
+        <div id="productsContent"></div>
+      </div>
+      <!-- Timing Tab -->
+      <div class="tab-panel" id="tab-timing">
+        <div id="timingContent"></div>
+      </div>
+      <!-- Frames Tab -->
+      <div class="tab-panel" id="tab-frames">
+        <div id="framesContent"></div>
+      </div>
+      <!-- Creator Detail Tab -->
+      <div class="tab-panel" id="tab-creator-info">
+        <div id="creatorInfoContent"></div>
+      </div>
+      <!-- Creator Features Tab -->
+      <div class="tab-panel" id="tab-creator-features">
+        <div id="creatorFeaturesContent"></div>
+      </div>
+      <!-- Creator Ranking History Tab -->
+      <div class="tab-panel" id="tab-creator-ranking">
+        <div id="creatorRankingContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    /* ── State ── */
+    let analyses = [];
+    let filteredAnalyses = [];
+    let currentSort = { key: 'createdAt', dir: 'desc' };
+    let refreshTimer = null;
+    let discoveredVideos = [];
+    let currentDetailData = null;
+    let rankingData = null;
+    let creatorsData = [];
+    let jobsData = [];
+    let jobsAutoRefreshTimer = null;
+    let currentDrawerMode = 'video';
+
+    /* ── Helpers ── */
+    function timeAgo(date) {
+      if (!date) return '--';
+      const now = Date.now();
+      const d = new Date(date).getTime();
+      const diff = Math.max(0, now - d);
+      const secs = Math.floor(diff / 1000);
+      if (secs < 60) return 'just now';
+      const mins = Math.floor(secs / 60);
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return days + 'd ago';
+      const months = Math.floor(days / 30);
+      return months + 'mo ago';
+    }
+
+    function formatDuration(ms) {
+      if (ms == null || isNaN(ms)) return '--';
+      if (ms < 1000) return ms + 'ms';
+      const s = ms / 1000;
+      if (s < 60) return s.toFixed(1) + 's';
+      const m = Math.floor(s / 60);
+      const rs = Math.floor(s % 60);
+      return m + 'm ' + rs + 's';
+    }
+
+    function truncate(str, len) {
+      if (!str) return '--';
+      return str.length > len ? str.slice(0, len) + '...' : str;
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function toast(msg, type) {
+      const el = document.createElement('div');
+      el.className = 'toast' + (type ? ' ' + type : '');
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => toast('Copied ' + (label || '') + ' to clipboard', 'success')).catch(() => toast('Copy failed', 'error'));
+    }
+
+    /* ── Page Switch ── */
+    const pageTitles = {
+      dashboard: 'Dashboard',
+      discovery: 'Discovery',
+      ranking: 'Ranking',
+      creators: 'Creators',
+      diff: 'Diff & QA',
+      jobs: 'Jobs'
+    };
+
+    function switchPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.toggle('active', a.dataset.page === name));
+      document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+
+      if (name === 'ranking') loadRanking();
+      if (name === 'creators') loadCreators();
+      if (name === 'diff') loadDiff();
+      if (name === 'jobs') loadJobs();
+    }
+
+    /* ── Data Loading ── */
+    async function loadAnalyses() {
+      try {
+        const res = await fetch('/api/admin/analyses');
+        if (!res.ok) throw new Error('Failed to load');
+        analyses = await res.json();
+        updateStats();
+        filterTable();
+        document.getElementById('refreshInfo').textContent = 'Updated ' + new Date().toLocaleTimeString();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to load analyses', 'error');
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>Failed to load data. Check server connection.</p></div></td></tr>';
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = analyses.length;
+      document.getElementById('statCompleted').textContent = analyses.filter(a => a.status === 'completed').length;
+      document.getElementById('statFailed').textContent = analyses.filter(a => a.status === 'failed').length;
+      const totalProducts = analyses.reduce((sum, a) => sum + (a.productCount || 0), 0);
+      document.getElementById('statProducts').textContent = totalProducts;
+    }
+
+    /* ── Table ── */
+    function filterTable() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      filteredAnalyses = analyses.filter(a => {
+        if (status && a.status !== status) return false;
+        if (search && !(a.title || '').toLowerCase().includes(search)) return false;
+        return true;
+      });
+      sortAndRender();
+    }
+
+    function sortTable(key) {
+      if (currentSort.key === key) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.key = key;
+        currentSort.dir = 'asc';
+      }
+      document.querySelectorAll('thead th').forEach(th => {
+        th.classList.toggle('sorted', th.dataset.sort === key);
+        const icon = th.querySelector('.sort-icon');
+        if (icon) icon.innerHTML = th.dataset.sort === key ? (currentSort.dir === 'asc' ? '&#9650;' : '&#9660;') : '&#9650;';
+      });
+      sortAndRender();
+    }
+
+    function sortAndRender() {
+      const key = currentSort.key;
+      const dir = currentSort.dir === 'asc' ? 1 : -1;
+      filteredAnalyses.sort((a, b) => {
+        let av = a[key], bv = b[key];
+        if (key === 'createdAt') { av = new Date(av || 0).getTime(); bv = new Date(bv || 0).getTime(); }
+        if (key === 'steps') { av = a.stepCount || 0; bv = b.stepCount || 0; }
+        if (key === 'products') { av = a.productCount || 0; bv = b.productCount || 0; }
+        if (key === 'processingTime') { av = a.processingTimeMs || 0; bv = b.processingTimeMs || 0; }
+        if (av == null) av = '';
+        if (bv == null) bv = '';
+        if (typeof av === 'string') return av.localeCompare(bv) * dir;
+        return (av - bv) * dir;
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      if (filteredAnalyses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No analyses found.</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = filteredAnalyses.map(a => {
+        const platformClass = (a.platform || 'video').toLowerCase().replace(/\s/g,'');
+        const statusClass = (a.status || 'pending').replace(/\s/g,'_');
+        const thumbHtml = a.thumbnailUrl
+          ? `<img class="thumb" src="${escapeHtml(a.thumbnailUrl)}" alt="" onerror="this.outerHTML='<div class=\\'thumb-placeholder\\'>&#9654;</div>'">`
+          : '<div class="thumb-placeholder">&#9654;</div>';
+        const matchedCount = a.matchedProductCount || 0;
+        const totalProducts = a.productCount || 0;
+        const productsDisplay = totalProducts > 0 ? matchedCount + '/' + totalProducts : '0';
+        return `<tr onclick="openDrawer(${a.id})">
+          <td>${thumbHtml}</td>
+          <td>${escapeHtml(truncate(a.title, 40))}</td>
+          <td><span class="platform-badge platform-${platformClass}">${escapeHtml(a.platform || 'Video')}</span></td>
+          <td><span class="badge badge-${statusClass}">${escapeHtml(statusClass.replace(/_/g,' '))}</span></td>
+          <td>${a.stepCount || 0}</td>
+          <td>${productsDisplay}</td>
+          <td>${formatDuration(a.processingTimeMs)}</td>
+          <td>${timeAgo(a.createdAt)}</td>
+          <td onclick="event.stopPropagation()">
+            <button class="btn btn-secondary btn-sm" onclick="openDrawer(${a.id})">View</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Drawer ── */
+    function setDrawerTabs(mode) {
+      currentDrawerMode = mode;
+      const container = document.getElementById('drawerTabsContainer');
+      if (mode === 'creator') {
+        container.innerHTML = `
+          <button class="drawer-tab active" data-tab="creator-info" onclick="switchTab('creator-info')">Info</button>
+          <button class="drawer-tab" data-tab="creator-features" onclick="switchTab('creator-features')">Features</button>
+          <button class="drawer-tab" data-tab="creator-ranking" onclick="switchTab('creator-ranking')">Ranking History</button>
+        `;
+      } else {
+        container.innerHTML = `
+          <button class="drawer-tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+          <button class="drawer-tab" data-tab="transcript" onclick="switchTab('transcript')">Transcript</button>
+          <button class="drawer-tab" data-tab="ai" onclick="switchTab('ai')">AI Analysis</button>
+          <button class="drawer-tab" data-tab="products" onclick="switchTab('products')">Products</button>
+          <button class="drawer-tab" data-tab="timing" onclick="switchTab('timing')">Timing</button>
+          <button class="drawer-tab" data-tab="frames" onclick="switchTab('frames')">Frames</button>
+        `;
+      }
+    }
+
+    function openDrawer(id) {
+      setDrawerTabs('video');
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('drawerLoading').style.display = 'flex';
+      document.getElementById('overviewContent').style.display = 'none';
+      switchTab('overview');
+      loadDetail(id);
+    }
+
+    function openCreatorDrawer(id) {
+      setDrawerTabs('creator');
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('creatorInfoContent').innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div> Loading...</div>';
+      document.getElementById('creatorFeaturesContent').innerHTML = '';
+      document.getElementById('creatorRankingContent').innerHTML = '';
+      switchTab('creator-info');
+      loadCreatorDetail(id);
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('drawerOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      currentDetailData = null;
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.drawer-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    }
+
+    async function loadDetail(id) {
+      try {
+        const res = await fetch('/api/admin/analyses/' + id + '/detail');
+        if (!res.ok) throw new Error('Failed to load detail');
+        currentDetailData = await res.json();
+        renderDetail(currentDetailData);
+      } catch (e) {
+        console.error(e);
+        toast('Failed to load video detail', 'error');
+        document.getElementById('drawerLoading').style.display = 'none';
+        document.getElementById('overviewContent').innerHTML = '<div class="empty-state"><p>Failed to load details.</p></div>';
+        document.getElementById('overviewContent').style.display = 'block';
+      }
+    }
+
+    function renderDetail(data) {
+      const analysis = data.analysis || data;
+      const debug = analysis.debugData || data.debugData || {};
+      const meta = debug.metadata || {};
+      const products = data.products || [];
+      const timing = debug.timingReport || {};
+      const transcript = debug.audioTranscript || null;
+      const aiResponse = debug.aiResponse || null;
+      const frames = debug.frames || [];
+
+      document.getElementById('drawerTitle').textContent = analysis.title || 'Video Detail';
+      document.getElementById('drawerLoading').style.display = 'none';
+      document.getElementById('overviewContent').style.display = 'block';
+
+      // Overview
+      document.getElementById('overviewContent').innerHTML = `
+        <div class="meta-grid">
+          <div class="meta-item"><div class="meta-label">Title</div><div class="meta-value">${escapeHtml(analysis.title || meta.title || '--')}</div></div>
+          <div class="meta-item"><div class="meta-label">Platform</div><div class="meta-value"><span class="platform-badge platform-${(analysis.platform || 'video').toLowerCase()}">${escapeHtml(analysis.platform || '--')}</span></div></div>
+          <div class="meta-item"><div class="meta-label">URL</div><div class="meta-value"><a href="${escapeHtml(analysis.videoUrl || meta.originalUrl || '')}" target="_blank">${escapeHtml(truncate(analysis.videoUrl || meta.originalUrl || '', 50))}</a></div></div>
+          <div class="meta-item"><div class="meta-label">Uploader</div><div class="meta-value">${escapeHtml(meta.uploader || '--')}</div></div>
+          <div class="meta-item"><div class="meta-label">Duration</div><div class="meta-value">${meta.duration ? meta.duration + 's' : '--'}</div></div>
+          <div class="meta-item"><div class="meta-label">Views</div><div class="meta-value">${meta.viewCount != null ? Number(meta.viewCount).toLocaleString() : '--'}</div></div>
+          <div class="meta-item"><div class="meta-label">Likes</div><div class="meta-value">${meta.likeCount != null ? Number(meta.likeCount).toLocaleString() : '--'}</div></div>
+          <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="badge badge-${(analysis.status || 'pending').replace(/\s/g,'_')}">${escapeHtml((analysis.status || 'pending').replace(/_/g,' '))}</span></div></div>
+          <div class="meta-item"><div class="meta-label">Created</div><div class="meta-value">${analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : '--'}</div></div>
+          <div class="meta-item"><div class="meta-label">Processing Time</div><div class="meta-value">${formatDuration(debug.processingTimeMs)}</div></div>
+        </div>`;
+
+      // Transcript
+      document.getElementById('transcriptContent').innerHTML = transcript
+        ? `<div class="mono-block" style="position:relative;"><button class="copy-btn" onclick="copyToClipboard(currentDetailData.analysis?.debugData?.audioTranscript || currentDetailData.debugData?.audioTranscript || '', 'transcript')">Copy</button>${escapeHtml(transcript)}</div>`
+        : '<div class="empty-state"><p>No transcript available.</p></div>';
+
+      // AI Response
+      document.getElementById('aiContent').innerHTML = aiResponse
+        ? `<div class="mono-block" style="position:relative;"><button class="copy-btn" onclick="copyToClipboard(currentDetailData.analysis?.debugData?.aiResponse || currentDetailData.debugData?.aiResponse || '', 'AI response')">Copy</button>${escapeHtml(aiResponse)}</div>`
+        : '<div class="empty-state"><p>No AI response available.</p></div>';
+
+      // Products
+      if (products.length > 0) {
+        document.getElementById('productsContent').innerHTML = '<div class="product-grid">' + products.map(p => {
+          const conf = parseFloat(p.aiConfidence) || 0;
+          const matchScore = p.matchScore ? p.matchScore.overall : null;
+          return `<div class="product-card">
+            <h4>${escapeHtml(p.aiDetectedName)}</h4>
+            <div class="detail">Brand: ${escapeHtml(p.aiDetectedBrand || 'Unknown')}</div>
+            <div class="detail">Type: ${escapeHtml(p.aiDetectedType || '--')}</div>
+            <div class="detail">Color: ${escapeHtml(p.aiDetectedColor || '--')}</div>
+            <div class="detail">Confidence: ${(conf * 100).toFixed(0)}% <span class="confidence-bar"><span class="confidence-bar-fill" style="width:${conf * 100}%"></span></span></div>
+            ${p.matchedProductName ? `<div class="match-info">
+              <div class="detail" style="font-weight:600;color:var(--text);">Matched: ${escapeHtml(p.matchedProductName)}</div>
+              <div class="detail">Brand: ${escapeHtml(p.matchedProductBrand || '--')}</div>
+              ${matchScore != null ? `<div class="detail">Match Score: ${(matchScore * 100).toFixed(0)}%</div>` : ''}
+            </div>` : '<div class="match-info"><div class="detail" style="color:#9ca3af;">No catalog match</div></div>'}
+          </div>`;
+        }).join('') + '</div>';
+      } else {
+        document.getElementById('productsContent').innerHTML = '<div class="empty-state"><p>No products detected.</p></div>';
+      }
+
+      // Timing
+      if (timing.stages && timing.stages.length > 0) {
+        const maxDur = Math.max(...timing.stages.filter(s => s.durationMs).map(s => s.durationMs), 1);
+        document.getElementById('timingContent').innerHTML = `
+          <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);">Total: ${formatDuration(timing.totalDurationMs)} | Frames: ${timing.frameCount || '--'} | Video: ${timing.videoDurationSec ? timing.videoDurationSec + 's' : '--'} | Mode: ${timing.extractionMode || '--'}</div>
+          <ul class="timing-list">${timing.stages.map(s => {
+            const dur = s.durationMs || 0;
+            const pct = Math.max(2, (dur / maxDur) * 100);
+            return `<li class="timing-item">
+              <span class="timing-stage">${escapeHtml(s.stage.replace(/_/g, ' '))}</span>
+              <div class="timing-bar-wrap"><div class="timing-bar" style="width:${pct}%"></div></div>
+              <span class="timing-dur">${formatDuration(dur)}</span>
+            </li>`;
+          }).join('')}</ul>`;
+      } else {
+        document.getElementById('timingContent').innerHTML = '<div class="empty-state"><p>No timing data available.</p></div>';
+      }
+
+      // Frames
+      if (frames.length > 0) {
+        document.getElementById('framesContent').innerHTML = '<div class="frames-grid">' +
+          frames.map((f, i) => `<img class="frame-thumb" src="${f}" alt="Frame ${i + 1}" loading="lazy">`).join('') +
+          '</div>';
+      } else {
+        document.getElementById('framesContent').innerHTML = '<div class="empty-state"><p>No frames available.</p></div>';
+      }
+    }
+
+    /* ── Bulk Queue ── */
+    async function bulkQueue() {
+      const text = document.getElementById('bulkUrls').value.trim();
+      if (!text) { toast('Please paste some URLs', 'error'); return; }
+      const urls = text.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+      if (urls.length === 0) { toast('No valid URLs found', 'error'); return; }
+
+      try {
+        const res = await fetch('/api/admin/bulk-queue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls }),
+        });
+        if (!res.ok) throw new Error('Queue failed');
+        const data = await res.json();
+        toast(urls.length + ' video(s) queued for processing', 'success');
+        document.getElementById('bulkUrls').value = '';
+        showBulkProgress(data);
+        setTimeout(loadAnalyses, 2000);
+      } catch (e) {
+        console.error(e);
+        toast('Failed to queue videos', 'error');
+      }
+    }
+
+    function showBulkProgress(data) {
+      const el = document.getElementById('bulkProgress');
+      el.style.display = 'flex';
+      document.getElementById('bpQueued').textContent = data.queued || 0;
+      document.getElementById('bpProcessing').textContent = data.processing || 0;
+      document.getElementById('bpDone').textContent = data.done || 0;
+    }
+
+    async function checkQueueStatus() {
+      try {
+        const res = await fetch('/api/admin/queue-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.queued || data.processing) showBulkProgress(data);
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    /* ── Discovery ── */
+    async function discoverVideos() {
+      const query = document.getElementById('discoverQuery').value.trim();
+      const category = document.getElementById('discoverCategory').value;
+      const sortBy = document.getElementById('discoverSort').value;
+      const searchQuery = query || category;
+
+      document.getElementById('discoveryResults').innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div> Searching...</div>';
+
+      try {
+        const res = await fetch('/api/admin/discover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: searchQuery, sortBy, maxResults: 20 }),
+        });
+        if (!res.ok) throw new Error('Discovery failed');
+        discoveredVideos = await res.json();
+        renderDiscoveryResults();
+      } catch (e) {
+        console.error(e);
+        toast('Discovery search failed', 'error');
+        document.getElementById('discoveryResults').innerHTML = '<div class="empty-state"><p>Search failed. Please try again.</p></div>';
+      }
+    }
+
+    function renderDiscoveryResults() {
+      const container = document.getElementById('discoveryResults');
+      const videos = Array.isArray(discoveredVideos) ? discoveredVideos : discoveredVideos.videos || [];
+      document.getElementById('queueAllBtn').style.display = videos.length > 0 ? 'inline-flex' : 'none';
+
+      if (videos.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No results found.</p></div>';
+        return;
+      }
+      container.innerHTML = videos.map((v, i) => `
+        <div class="disc-card">
+          ${v.thumbnail ? `<img src="${escapeHtml(v.thumbnail)}" alt="" onerror="this.style.display='none'">` : ''}
+          <div class="disc-card-body">
+            <h4>${escapeHtml(truncate(v.title || '', 60))}</h4>
+            <div class="disc-meta">
+              <span>${v.viewCount ? Number(v.viewCount).toLocaleString() + ' views' : ''}</span>
+              <span>${escapeHtml(v.channelName || '')}</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="queueDiscovered(${i})">Queue</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function queueDiscovered(index) {
+      const videos = Array.isArray(discoveredVideos) ? discoveredVideos : discoveredVideos.videos || [];
+      const v = videos[index];
+      if (!v) return;
+      try {
+        const res = await fetch('/api/admin/queue-discovered', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videos: [{ url: v.url, title: v.title, viewCount: v.viewCount, channelName: v.channelName }] }),
+        });
+        if (!res.ok) throw new Error('Queue failed');
+        toast('Queued: ' + truncate(v.title || v.url, 40), 'success');
+      } catch (e) {
+        toast('Failed to queue video', 'error');
+      }
+    }
+
+    async function queueAllDiscovered() {
+      const videos = Array.isArray(discoveredVideos) ? discoveredVideos : discoveredVideos.videos || [];
+      if (videos.length === 0) return;
+      try {
+        const payload = videos.map(v => ({ url: v.url, title: v.title, viewCount: v.viewCount, channelName: v.channelName }));
+        const res = await fetch('/api/admin/queue-discovered', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videos: payload }),
+        });
+        if (!res.ok) throw new Error('Queue failed');
+        toast(videos.length + ' videos queued for processing', 'success');
+      } catch (e) {
+        toast('Failed to queue videos', 'error');
+      }
+    }
+
+    /* ── Ranking ── */
+    async function loadRanking() {
+      try {
+        const res = await fetch('/api/admin/ranking/latest');
+        if (!res.ok) throw new Error('Failed to load ranking');
+        rankingData = await res.json();
+        renderRanking();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('rankingTableBody').innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No ranking data available.</p></div></td></tr>';
+        document.getElementById('rankStatTotal').textContent = '0';
+        document.getElementById('rankStatRanked').textContent = '0';
+        document.getElementById('rankStatDate').textContent = '--';
+        document.getElementById('rankStatTopScore').textContent = '--';
+      }
+    }
+
+    function renderRanking() {
+      const snapshot = rankingData.snapshot || {};
+      const entries = rankingData.entries || [];
+
+      document.getElementById('rankStatTotal').textContent = snapshot.totalCreators || entries.length || '0';
+      document.getElementById('rankStatRanked').textContent = entries.length;
+      document.getElementById('rankStatDate').textContent = snapshot.createdAt ? new Date(snapshot.createdAt).toLocaleDateString() : '--';
+      document.getElementById('rankStatTopScore').textContent = entries.length > 0 ? (entries[0].score || 0).toFixed(1) : '--';
+
+      const tbody = document.getElementById('rankingTableBody');
+      if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No ranking entries yet. Run a full refresh to generate rankings.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = entries.slice(0, 100).map(e => {
+        const c = e.creator || {};
+        const b = e.breakdown || {};
+        const platformClass = (c.platform || 'video').toLowerCase();
+        const scorePct = Math.min(100, (e.score || 0));
+        return `<tr onclick="openCreatorDrawer(${c.id})">
+          <td><strong>${e.rank || '--'}</strong></td>
+          <td>${escapeHtml(c.handle || '--')}</td>
+          <td>${escapeHtml(c.displayName || '--')}</td>
+          <td><span class="platform-badge platform-${platformClass}">${escapeHtml(c.platform || '--')}</span></td>
+          <td>${(e.score || 0).toFixed(1)} <span class="score-bar"><span class="score-bar-fill" style="width:${scorePct}%"></span></span></td>
+          <td>${(b.formatFit || 0).toFixed(1)}</td>
+          <td>${(b.consistency || 0).toFixed(1)}</td>
+          <td>${(b.performance || 0).toFixed(1)}</td>
+          <td>${(b.repeatability || 0).toFixed(1)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function runRankingRefresh() {
+      try {
+        const res = await fetch('/api/admin/ranking/refresh', { method: 'POST' });
+        if (!res.ok) throw new Error('Refresh failed');
+        toast('Ranking refresh started', 'success');
+        setTimeout(loadRanking, 3000);
+      } catch (e) {
+        console.error(e);
+        toast('Failed to start ranking refresh', 'error');
+      }
+    }
+
+    /* ── Creators ── */
+    async function loadCreators() {
+      try {
+        const res = await fetch('/api/admin/creators');
+        if (!res.ok) throw new Error('Failed to load creators');
+        creatorsData = await res.json();
+        renderCreators();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('creatorsTableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Failed to load creators.</p></div></td></tr>';
+      }
+    }
+
+    function renderCreators() {
+      const tbody = document.getElementById('creatorsTableBody');
+      const list = Array.isArray(creatorsData) ? creatorsData : creatorsData.creators || [];
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No creators found. Add some creators to get started.</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(c => {
+        const platformClass = (c.platform || 'video').toLowerCase();
+        return `<tr onclick="openCreatorDrawer(${c.id})">
+          <td>${escapeHtml(c.handle || '--')}</td>
+          <td>${escapeHtml(c.displayName || '--')}</td>
+          <td><span class="platform-badge platform-${platformClass}">${escapeHtml(c.platform || '--')}</span></td>
+          <td>${escapeHtml(c.source || '--')}</td>
+          <td>${c.active !== false ? '<span class="badge badge-completed">Yes</span>' : '<span class="badge badge-failed">No</span>'}</td>
+          <td>${timeAgo(c.createdAt)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function addCreator() {
+      const handle = document.getElementById('creatorHandle').value.trim();
+      if (!handle) { toast('Handle is required', 'error'); return; }
+      const displayName = document.getElementById('creatorDisplayName').value.trim();
+      const platform = document.getElementById('creatorPlatform').value;
+
+      try {
+        const res = await fetch('/api/admin/creators', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ handle, displayName, platform }),
+        });
+        if (!res.ok) throw new Error('Failed to add creator');
+        toast('Creator added: ' + handle, 'success');
+        document.getElementById('creatorHandle').value = '';
+        document.getElementById('creatorDisplayName').value = '';
+        loadCreators();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to add creator', 'error');
+      }
+    }
+
+    async function importCreators() {
+      const text = document.getElementById('creatorsImportJson').value.trim();
+      if (!text) { toast('Please paste JSON data', 'error'); return; }
+      let creators;
+      try {
+        creators = JSON.parse(text);
+      } catch (e) {
+        toast('Invalid JSON format', 'error');
+        return;
+      }
+      if (!Array.isArray(creators)) { toast('JSON must be an array', 'error'); return; }
+
+      try {
+        const res = await fetch('/api/admin/creators/import-csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creators }),
+        });
+        if (!res.ok) throw new Error('Import failed');
+        const data = await res.json();
+        toast('Imported ' + (data.count || creators.length) + ' creator(s)', 'success');
+        document.getElementById('creatorsImportJson').value = '';
+        loadCreators();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to import creators', 'error');
+      }
+    }
+
+    async function seedMockCreators() {
+      const mockCreators = [
+        { handle: '@glambynikki', displayName: 'Nikki Glam', platform: 'tiktok' },
+        { handle: '@beautybyalisa', displayName: 'Alisa Beauty', platform: 'tiktok' },
+        { handle: '@makeupbymario', displayName: 'Mario Dedivanovic', platform: 'instagram' },
+        { handle: '@patricktabeauty', displayName: 'Patrick Ta', platform: 'instagram' },
+        { handle: '@nikkietutorials', displayName: 'NikkieTutorials', platform: 'youtube' },
+        { handle: '@jamescharles', displayName: 'James Charles', platform: 'youtube' },
+        { handle: '@hudabeauty', displayName: 'Huda Kattan', platform: 'instagram' },
+        { handle: '@jackieaina', displayName: 'Jackie Aina', platform: 'youtube' },
+        { handle: '@mannymua', displayName: 'Manny MUA', platform: 'youtube' },
+        { handle: '@bretmanrock', displayName: 'Bretman Rock', platform: 'tiktok' },
+        { handle: '@mikaylanogueira', displayName: 'Mikayla Nogueira', platform: 'tiktok' },
+        { handle: '@skincarebyhyram', displayName: 'Hyram Yarbro', platform: 'youtube' },
+        { handle: '@raboreal', displayName: 'Rabo Real', platform: 'tiktok' },
+        { handle: '@aaboreal', displayName: 'Glam Glow Girl', platform: 'instagram' },
+        { handle: '@thebeautybliss', displayName: 'Beauty Bliss', platform: 'tiktok' }
+      ];
+
+      toast('Seeding ' + mockCreators.length + ' mock creators...', 'success');
+
+      try {
+        const res = await fetch('/api/admin/creators/import-csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creators: mockCreators }),
+        });
+        if (!res.ok) throw new Error('Seed failed');
+        toast('Mock creators seeded! Starting full refresh...', 'success');
+        loadCreators();
+
+        const refreshRes = await fetch('/api/admin/ranking/refresh', { method: 'POST' });
+        if (refreshRes.ok) {
+          toast('Full refresh job enqueued', 'success');
+        }
+      } catch (e) {
+        console.error(e);
+        toast('Failed to seed mock creators', 'error');
+      }
+    }
+
+    async function loadCreatorDetail(id) {
+      try {
+        const res = await fetch('/api/admin/creators/' + id);
+        if (!res.ok) throw new Error('Failed to load creator');
+        const data = await res.json();
+        renderCreatorDetail(data);
+      } catch (e) {
+        console.error(e);
+        toast('Failed to load creator detail', 'error');
+        document.getElementById('creatorInfoContent').innerHTML = '<div class="empty-state"><p>Failed to load creator details.</p></div>';
+      }
+    }
+
+    function renderCreatorDetail(data) {
+      const creator = data.creator || data;
+      const features = data.features || creator.features || {};
+      const rankingHistory = data.rankingHistory || [];
+
+      document.getElementById('drawerTitle').textContent = creator.displayName || creator.handle || 'Creator Detail';
+
+      document.getElementById('creatorInfoContent').innerHTML = `
+        <div class="meta-grid">
+          <div class="meta-item"><div class="meta-label">Handle</div><div class="meta-value">${escapeHtml(creator.handle || '--')}</div></div>
+          <div class="meta-item"><div class="meta-label">Display Name</div><div class="meta-value">${escapeHtml(creator.displayName || '--')}</div></div>
+          <div class="meta-item"><div class="meta-label">Platform</div><div class="meta-value"><span class="platform-badge platform-${(creator.platform || 'video').toLowerCase()}">${escapeHtml(creator.platform || '--')}</span></div></div>
+          <div class="meta-item"><div class="meta-label">Source</div><div class="meta-value">${escapeHtml(creator.source || '--')}</div></div>
+          <div class="meta-item"><div class="meta-label">Active</div><div class="meta-value">${creator.active !== false ? '<span class="badge badge-completed">Yes</span>' : '<span class="badge badge-failed">No</span>'}</div></div>
+          <div class="meta-item"><div class="meta-label">Created</div><div class="meta-value">${creator.createdAt ? new Date(creator.createdAt).toLocaleString() : '--'}</div></div>
+          ${creator.avatarUrl ? `<div class="meta-item"><div class="meta-label">Avatar</div><div class="meta-value"><img src="${escapeHtml(creator.avatarUrl)}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;"></div></div>` : ''}
+        </div>`;
+
+      const featureKeys = ['grwmRatio', 'tutorialRatio', 'reviewRatio', 'haulRatio', 'avgDuration', 'postFrequency', 'avgViews', 'avgLikes', 'avgComments', 'engagementRate'];
+      const featureRows = featureKeys.filter(k => features[k] !== undefined).map(k => {
+        const val = features[k];
+        return `<tr><td style="font-weight:500;">${escapeHtml(k)}</td><td>${typeof val === 'number' ? val.toFixed(3) : escapeHtml(String(val))}</td></tr>`;
+      }).join('');
+
+      document.getElementById('creatorFeaturesContent').innerHTML = featureRows
+        ? `<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Value</th></tr></thead><tbody>${featureRows}</tbody></table></div>`
+        : '<div class="empty-state"><p>No features data available.</p></div>';
+
+      if (rankingHistory.length > 0) {
+        document.getElementById('creatorRankingContent').innerHTML = `
+          <div class="table-wrap"><table>
+            <thead><tr><th>Date</th><th>Rank</th><th>Score</th></tr></thead>
+            <tbody>${rankingHistory.map(r => `<tr>
+              <td>${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '--'}</td>
+              <td>${r.rank || '--'}</td>
+              <td>${(r.score || 0).toFixed(1)}</td>
+            </tr>`).join('')}</tbody>
+          </table></div>`;
+      } else {
+        document.getElementById('creatorRankingContent').innerHTML = '<div class="empty-state"><p>No ranking history available.</p></div>';
+      }
+    }
+
+    /* ── Jobs ── */
+    async function loadJobs() {
+      try {
+        const res = await fetch('/api/admin/jobs');
+        if (!res.ok) throw new Error('Failed to load jobs');
+        jobsData = await res.json();
+        renderJobs();
+        scheduleJobsAutoRefresh();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('jobsTableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Failed to load jobs.</p></div></td></tr>';
+      }
+    }
+
+    function renderJobs() {
+      const tbody = document.getElementById('jobsTableBody');
+      const list = Array.isArray(jobsData) ? jobsData : jobsData.jobs || [];
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No jobs found.</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(j => {
+        const statusClass = (j.status || 'queued').toLowerCase();
+        return `<tr>
+          <td>${j.id || '--'}</td>
+          <td>${escapeHtml(j.name || j.type || '--')}</td>
+          <td><span class="badge badge-${statusClass}">${escapeHtml(j.status || 'queued')}</span></td>
+          <td>${j.startedAt ? new Date(j.startedAt).toLocaleString() : (j.createdAt ? new Date(j.createdAt).toLocaleString() : '--')}</td>
+          <td>${j.finishedAt ? new Date(j.finishedAt).toLocaleString() : '--'}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(j.error || '')}">${escapeHtml(truncate(j.error || '', 40))}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function scheduleJobsAutoRefresh() {
+      if (jobsAutoRefreshTimer) clearInterval(jobsAutoRefreshTimer);
+      const list = Array.isArray(jobsData) ? jobsData : jobsData.jobs || [];
+      const hasActive = list.some(j => j.status === 'queued' || j.status === 'running');
+      if (hasActive) {
+        jobsAutoRefreshTimer = setInterval(() => {
+          const jobsPage = document.getElementById('page-jobs');
+          if (jobsPage && jobsPage.classList.contains('active')) {
+            loadJobs();
+          } else {
+            clearInterval(jobsAutoRefreshTimer);
+            jobsAutoRefreshTimer = null;
+          }
+        }, 5000);
+      }
+    }
+
+    async function enqueueJob() {
+      const type = document.getElementById('jobTypeSelect').value;
+      try {
+        const res = await fetch('/api/admin/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: type, type }),
+        });
+        if (!res.ok) throw new Error('Enqueue failed');
+        toast('Job enqueued: ' + type, 'success');
+        loadJobs();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to enqueue job', 'error');
+      }
+    }
+
+    /* ── Diff & QA ── */
+    let diffData = null;
+    let diffSnapshotsLoaded = false;
+
+    async function loadDiff() {
+      const selA = document.getElementById('diffSnapshotA');
+      const selB = document.getElementById('diffSnapshotB');
+      const aVal = selA.value || '';
+      const bVal = selB.value || '';
+
+      let url = '/api/admin/diff';
+      const params = [];
+      if (aVal) params.push('a=' + aVal);
+      if (bVal) params.push('b=' + bVal);
+      if (params.length) url += '?' + params.join('&');
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to load diff');
+        diffData = await res.json();
+
+        if (diffData.snapshots && diffData.snapshots.length > 0 && !diffSnapshotsLoaded) {
+          diffSnapshotsLoaded = true;
+          selA.innerHTML = '<option value="">(none)</option>' + diffData.snapshots.map(s =>
+            `<option value="${s.id}" ${diffData.snapshotA && s.id === diffData.snapshotA.id ? 'selected' : ''}>
+              #${s.id} - ${s.snapshotDate} (${new Date(s.createdAt).toLocaleDateString()})
+            </option>`
+          ).join('');
+          selB.innerHTML = diffData.snapshots.map(s =>
+            `<option value="${s.id}" ${s.id === diffData.snapshotB.id ? 'selected' : ''}>
+              #${s.id} - ${s.snapshotDate} (${new Date(s.createdAt).toLocaleDateString()})
+            </option>`
+          ).join('');
+        }
+
+        renderDiffTable();
+        renderPrecision();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('diffTableBody').innerHTML =
+          '<tr><td colspan="8"><div class="empty-state"><p>No snapshots available. Run a ranking refresh first.</p></div></td></tr>';
+        document.getElementById('precisionCard').style.display = 'none';
+      }
+    }
+
+    function renderDiffTable() {
+      const tbody = document.getElementById('diffTableBody');
+      if (!diffData || !diffData.diff || diffData.diff.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>No ranking entries in this snapshot.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = diffData.diff.map(d => {
+        let deltaHtml = '';
+        if (d.rankDelta === null) {
+          deltaHtml = '<span class="rank-delta new-entry">NEW</span>';
+        } else if (d.rankDelta > 0) {
+          deltaHtml = `<span class="rank-delta up">&#9650; ${d.rankDelta}</span>`;
+        } else if (d.rankDelta < 0) {
+          deltaHtml = `<span class="rank-delta down">&#9660; ${Math.abs(d.rankDelta)}</span>`;
+        } else {
+          deltaHtml = '<span class="rank-delta same">&#8212;</span>';
+        }
+
+        const currentLabel = d.humanLabel ? d.humanLabel.label : null;
+        const correctActive = currentLabel === 'correct' ? 'active-correct' : '';
+        const wrongActive = currentLabel === 'wrong' ? 'active-wrong' : '';
+
+        return `<tr>
+          <td style="font-weight:700;">${d.rank}</td>
+          <td>${escapeHtml(d.creator.handle || '--')}</td>
+          <td>${escapeHtml(d.creator.displayName || '--')}</td>
+          <td><span class="platform-badge platform-${(d.creator.platform || 'video').toLowerCase()}">${escapeHtml(d.creator.platform || '--')}</span></td>
+          <td>${(d.score || 0).toFixed(1)}</td>
+          <td>${d.prevRank !== null ? d.prevRank : '--'}</td>
+          <td>${deltaHtml}</td>
+          <td>
+            <div class="label-btns">
+              <button class="label-btn ${correctActive}" onclick="setLabel(${d.creator.id}, 'correct', this)">Correct</button>
+              <button class="label-btn ${wrongActive}" onclick="setLabel(${d.creator.id}, 'wrong', this)">Wrong</button>
+              ${currentLabel ? `<button class="label-btn" onclick="clearLabel(${d.creator.id}, ${d.humanLabel ? d.humanLabel.id : 0})" title="Clear label" style="padding:4px 6px;">&#10005;</button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderPrecision() {
+      const card = document.getElementById('precisionCard');
+      if (!diffData || !diffData.precision) {
+        card.style.display = 'none';
+        return;
+      }
+      card.style.display = 'block';
+      const p = diffData.precision;
+      document.getElementById('precLabeled').textContent = p.labeled;
+      document.getElementById('precCorrect').textContent = p.correct;
+      document.getElementById('precWrong').textContent = p.wrong;
+      document.getElementById('precScore').textContent = p.precision !== null ? (p.precision * 100).toFixed(1) + '%' : '--';
+      document.getElementById('precTotal').textContent = p.total;
+
+      const barWrap = document.getElementById('precisionBarWrap');
+      if (p.labeled > 0) {
+        barWrap.style.display = 'flex';
+        const correctPct = (p.correct / p.total * 100).toFixed(1);
+        const wrongPct = (p.wrong / p.total * 100).toFixed(1);
+        document.getElementById('precBarCorrect').style.width = correctPct + '%';
+        document.getElementById('precBarWrong').style.width = wrongPct + '%';
+      } else {
+        barWrap.style.display = 'none';
+      }
+    }
+
+    async function setLabel(creatorId, label, btn) {
+      if (!diffData || !diffData.snapshotB) return;
+      const snapshotId = diffData.snapshotB.id;
+
+      try {
+        const res = await fetch('/api/admin/labels', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshotId, creatorId, label }),
+        });
+        if (!res.ok) throw new Error('Failed to save label');
+
+        const entry = diffData.diff.find(d => d.creator.id === creatorId);
+        if (entry) {
+          const result = await res.json();
+          entry.humanLabel = { label, note: null, id: result.id };
+        }
+
+        if (label === 'correct') {
+          diffData.precision.correct++;
+          if (entry.humanLabel && entry.humanLabel.label !== label) diffData.precision.wrong = Math.max(0, diffData.precision.wrong - 1);
+        } else {
+          diffData.precision.wrong++;
+          if (entry.humanLabel && entry.humanLabel.label !== label) diffData.precision.correct = Math.max(0, diffData.precision.correct - 1);
+        }
+
+        diffSnapshotsLoaded = false;
+        loadDiff();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to save label', 'error');
+      }
+    }
+
+    async function clearLabel(creatorId, labelId) {
+      if (!labelId) return;
+      try {
+        const res = await fetch('/api/admin/labels/' + labelId, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to clear label');
+        diffSnapshotsLoaded = false;
+        loadDiff();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to clear label', 'error');
+      }
+    }
+
+    /* ── Keyboard ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    /* ── Init ── */
+    loadAnalyses();
+    refreshTimer = setInterval(loadAnalyses, 30000);
+  </script>
+</body>
+</html>
