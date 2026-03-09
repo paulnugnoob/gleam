@@ -37,10 +37,13 @@ export const FIXED_FPS_CONFIG: FrameExtractionConfig = {
 
 export function calculateFrameCount(
   durationSeconds: number,
-  config: FrameExtractionConfig = DEFAULT_FRAME_CONFIG
+  config: FrameExtractionConfig = DEFAULT_FRAME_CONFIG,
 ): number {
   const calculatedFrames = Math.floor(durationSeconds / config.secondsPerFrame);
-  return Math.max(config.minFrames, Math.min(calculatedFrames, config.maxFrames));
+  return Math.max(
+    config.minFrames,
+    Math.min(calculatedFrames, config.maxFrames),
+  );
 }
 
 export interface VideoMetadata {
@@ -71,15 +74,17 @@ function detectPlatform(url: string): string {
   return "Unknown";
 }
 
-export async function getVideoMetadata(videoUrl: string): Promise<VideoMetadata> {
+export async function getVideoMetadata(
+  videoUrl: string,
+): Promise<VideoMetadata> {
   try {
     const { stdout } = await execAsync(
       `yt-dlp --dump-json --no-warnings "${videoUrl}"`,
-      { maxBuffer: 10 * 1024 * 1024 }
+      { maxBuffer: 10 * 1024 * 1024 },
     );
-    
+
     const info = JSON.parse(stdout);
-    
+
     return {
       title: info.title || "Untitled Video",
       description: info.description || "",
@@ -115,7 +120,7 @@ export async function downloadVideo(videoUrl: string): Promise<DownloadResult> {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gleam-video-"));
   const videoPath = path.join(tempDir, "video.mp4");
   const audioPath = path.join(tempDir, "audio.m4a");
-  
+
   console.log(`Downloading video from: ${videoUrl}`);
   console.log(`Temp directory: ${tempDir}`);
 
@@ -125,13 +130,18 @@ export async function downloadVideo(videoUrl: string): Promise<DownloadResult> {
     await new Promise<void>((resolve, reject) => {
       const args = [
         videoUrl,
-        "-f", "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]/best[height<=720]/best",
-        "-o", videoPath,
+        "-f",
+        "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]/best[height<=720]/best",
+        "-o",
+        videoPath,
         "--no-playlist",
         "--no-warnings",
-        "--socket-timeout", "60",
-        "--retries", "3",
-        "--merge-output-format", "mp4",
+        "--socket-timeout",
+        "60",
+        "--retries",
+        "3",
+        "--merge-output-format",
+        "mp4",
       ];
 
       console.log("yt-dlp args:", args.join(" "));
@@ -164,7 +174,9 @@ export async function downloadVideo(videoUrl: string): Promise<DownloadResult> {
 
     if (!fs.existsSync(videoPath)) {
       const files = fs.readdirSync(tempDir);
-      const videoFile = files.find(f => f.endsWith(".mp4") || f.endsWith(".webm") || f.endsWith(".mkv"));
+      const videoFile = files.find(
+        (f) => f.endsWith(".mp4") || f.endsWith(".webm") || f.endsWith(".mkv"),
+      );
       if (videoFile) {
         const actualPath = path.join(tempDir, videoFile);
         fs.renameSync(actualPath, videoPath);
@@ -183,7 +195,9 @@ export async function downloadVideo(videoUrl: string): Promise<DownloadResult> {
 
   let extractedAudioPath: string | null = null;
   try {
-    await execAsync(`ffmpeg -i "${videoPath}" -vn -acodec aac -ab 128k "${audioPath}" -y`);
+    await execAsync(
+      `ffmpeg -i "${videoPath}" -vn -acodec aac -ab 128k "${audioPath}" -y`,
+    );
     extractedAudioPath = audioPath;
     console.log("Audio extracted successfully");
   } catch (error) {
@@ -208,28 +222,30 @@ export interface ExtractFramesResult {
 
 async function getVideoDuration(videoPath: string): Promise<number> {
   const { stdout } = await execAsync(
-    `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`
+    `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`,
   );
   return parseFloat(stdout.trim()) || 30;
 }
 
 async function detectSceneChanges(
   videoPath: string,
-  threshold: number
+  threshold: number,
 ): Promise<number[]> {
   try {
     const cmd = `ffmpeg -i "${videoPath}" -vf "select='gt(scene,${threshold})',showinfo" -f null - 2>&1`;
-    const { stdout, stderr } = await execAsync(cmd, { maxBuffer: 50 * 1024 * 1024 });
+    const { stdout, stderr } = await execAsync(cmd, {
+      maxBuffer: 50 * 1024 * 1024,
+    });
     const output = stdout + stderr;
-    
+
     const timestamps: number[] = [];
     const regex = /pts_time:(\d+\.?\d*)/g;
     let match;
-    
+
     while ((match = regex.exec(output)) !== null) {
       timestamps.push(parseFloat(match[1]));
     }
-    
+
     return timestamps;
   } catch (error) {
     console.warn("Scene detection failed, falling back to fixed FPS:", error);
@@ -240,7 +256,7 @@ async function detectSceneChanges(
 function filterTimestamps(
   timestamps: number[],
   duration: number,
-  config: FrameExtractionConfig
+  config: FrameExtractionConfig,
 ): number[] {
   if (timestamps.length === 0) return [];
 
@@ -256,7 +272,7 @@ function filterTimestamps(
     if (ts - lastTimestamp >= config.minFrameSpacingSec) {
       filtered.push(ts);
       lastTimestamp = ts;
-      
+
       if (filtered.length >= config.maxFrames) break;
     }
   }
@@ -276,11 +292,11 @@ function filterTimestamps(
 async function extractFrameAtTimestamp(
   videoPath: string,
   timestamp: number,
-  outputPath: string
+  outputPath: string,
 ): Promise<boolean> {
   try {
     await execAsync(
-      `ffmpeg -ss ${timestamp} -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}" -y`
+      `ffmpeg -ss ${timestamp} -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}" -y`,
     );
     return fs.existsSync(outputPath);
   } catch {
@@ -292,52 +308,72 @@ async function extractFramesFixedFps(
   videoPath: string,
   duration: number,
   config: FrameExtractionConfig,
-  framesDir: string
+  framesDir: string,
 ): Promise<ExtractFramesResult> {
   const frameCount = calculateFrameCount(duration, config);
   const interval = duration / (frameCount + 1);
   const framePaths: string[] = [];
 
-  console.log(`[fixed_fps] Video: ${duration.toFixed(1)}s, extracting ${frameCount} frames (1 per ${config.secondsPerFrame}s)`);
+  console.log(
+    `[fixed_fps] Video: ${duration.toFixed(1)}s, extracting ${frameCount} frames (1 per ${config.secondsPerFrame}s)`,
+  );
 
   for (let i = 1; i <= frameCount; i++) {
     const timestamp = interval * i;
-    const framePath = path.join(framesDir, `frame_${i.toString().padStart(3, "0")}.jpg`);
-    
+    const framePath = path.join(
+      framesDir,
+      `frame_${i.toString().padStart(3, "0")}.jpg`,
+    );
+
     if (await extractFrameAtTimestamp(videoPath, timestamp, framePath)) {
       framePaths.push(framePath);
     }
   }
 
   console.log(`[fixed_fps] Extracted ${framePaths.length} frames`);
-  return { framePaths, duration, frameCount: framePaths.length, mode: "fixed_fps" };
+  return {
+    framePaths,
+    duration,
+    frameCount: framePaths.length,
+    mode: "fixed_fps",
+  };
 }
 
 async function extractFramesSceneChange(
   videoPath: string,
   duration: number,
   config: FrameExtractionConfig,
-  framesDir: string
+  framesDir: string,
 ): Promise<ExtractFramesResult> {
-  console.log(`[scene_change] Detecting scene changes (threshold: ${config.sceneChangeThreshold})...`);
-  
-  const rawTimestamps = await detectSceneChanges(videoPath, config.sceneChangeThreshold);
+  console.log(
+    `[scene_change] Detecting scene changes (threshold: ${config.sceneChangeThreshold})...`,
+  );
+
+  const rawTimestamps = await detectSceneChanges(
+    videoPath,
+    config.sceneChangeThreshold,
+  );
   console.log(`[scene_change] Found ${rawTimestamps.length} raw scene changes`);
-  
+
   if (rawTimestamps.length === 0) {
     console.log(`[scene_change] No scenes detected, falling back to fixed FPS`);
     return extractFramesFixedFps(videoPath, duration, config, framesDir);
   }
 
   const timestamps = filterTimestamps(rawTimestamps, duration, config);
-  console.log(`[scene_change] Filtered to ${timestamps.length} keyframes (min spacing: ${config.minFrameSpacingSec}s, max: ${config.maxFrames})`);
+  console.log(
+    `[scene_change] Filtered to ${timestamps.length} keyframes (min spacing: ${config.minFrameSpacingSec}s, max: ${config.maxFrames})`,
+  );
 
   const framePaths: string[] = [];
-  
+
   for (let i = 0; i < timestamps.length; i++) {
     const timestamp = timestamps[i];
-    const framePath = path.join(framesDir, `frame_${(i + 1).toString().padStart(3, "0")}.jpg`);
-    
+    const framePath = path.join(
+      framesDir,
+      `frame_${(i + 1).toString().padStart(3, "0")}.jpg`,
+    );
+
     if (await extractFrameAtTimestamp(videoPath, timestamp, framePath)) {
       framePaths.push(framePath);
     }
@@ -354,8 +390,8 @@ async function extractFramesSceneChange(
 }
 
 export async function extractFrames(
-  videoPath: string, 
-  config: FrameExtractionConfig = DEFAULT_FRAME_CONFIG
+  videoPath: string,
+  config: FrameExtractionConfig = DEFAULT_FRAME_CONFIG,
 ): Promise<ExtractFramesResult> {
   const tempDir = path.dirname(videoPath);
   const framesDir = path.join(tempDir, "frames");
@@ -363,11 +399,21 @@ export async function extractFrames(
 
   try {
     const duration = await getVideoDuration(videoPath);
-    
+
     if (config.mode === "scene_change") {
-      return await extractFramesSceneChange(videoPath, duration, config, framesDir);
+      return await extractFramesSceneChange(
+        videoPath,
+        duration,
+        config,
+        framesDir,
+      );
     } else {
-      return await extractFramesFixedFps(videoPath, duration, config, framesDir);
+      return await extractFramesFixedFps(
+        videoPath,
+        duration,
+        config,
+        framesDir,
+      );
     }
   } catch (error) {
     console.error("Error extracting frames:", error);

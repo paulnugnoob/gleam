@@ -73,11 +73,18 @@ export default function ProfileScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(100).duration(400)}>
-        <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.backgroundDefault }]}
+        >
           <View style={styles.sectionHeader}>
             <ThemedText type="h3">Skin Tone Profile</ThemedText>
             {profile?.skinToneData ? (
-              <View style={[styles.skinToneBadge, { backgroundColor: profile.skinToneData.hexColor }]}>
+              <View
+                style={[
+                  styles.skinToneBadge,
+                  { backgroundColor: profile.skinToneData.hexColor },
+                ]}
+              >
                 <ThemedText type="caption" style={{ color: "#FFFFFF" }}>
                   {profile.skinToneData.undertone}
                 </ThemedText>
@@ -108,7 +115,10 @@ export default function ProfileScreen() {
 
           {!profile?.skinToneData ? (
             <View style={styles.noSkinTone}>
-              <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: "center" }}>
+              <ThemedText
+                type="body"
+                style={{ color: theme.textSecondary, textAlign: "center" }}
+              >
                 Add a selfie to get personalized shade recommendations
               </ThemedText>
               <Button
@@ -124,7 +134,9 @@ export default function ProfileScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-        <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.backgroundDefault }]}
+        >
           <ThemedText type="h3" style={styles.sectionTitle}>
             About
           </ThemedText>
@@ -141,7 +153,11 @@ export default function ProfileScreen() {
             <ThemedText type="body" style={{ flex: 1 }}>
               Privacy Policy
             </ThemedText>
-            <Feather name="chevron-right" size={18} color={theme.textTertiary} />
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={theme.textTertiary}
+            />
           </Pressable>
 
           <Pressable style={styles.aboutRow}>
@@ -149,7 +165,11 @@ export default function ProfileScreen() {
             <ThemedText type="body" style={{ flex: 1 }}>
               Terms of Service
             </ThemedText>
-            <Feather name="chevron-right" size={18} color={theme.textTertiary} />
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={theme.textTertiary}
+            />
           </Pressable>
         </View>
       </Animated.View>

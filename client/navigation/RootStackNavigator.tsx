@@ -15,7 +15,9 @@ export type RootStackParamList = {
   VideoAnalysis: { videoUrl: string; analysisId?: number };
   LookDetail: { lookId: number; analysisId: number; title: string };
   ProductDetail: { product: DetectedProduct };
-  ShoppingList: { look: { id: number; title: string; videoAnalysisId: number } };
+  ShoppingList: {
+    look: { id: number; title: string; videoAnalysisId: number };
+  };
   SelfieCapture: undefined;
   DebugAnalysis: { analysisId: number };
 };

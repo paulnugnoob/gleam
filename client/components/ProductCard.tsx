@@ -21,7 +21,12 @@ interface ProductCardProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function ProductCard({ product, onPress, compact = false, testID }: ProductCardProps) {
+export function ProductCard({
+  product,
+  onPress,
+  compact = false,
+  testID,
+}: ProductCardProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
 
@@ -58,7 +63,12 @@ export function ProductCard({ product, onPress, compact = false, testID }: Produ
         {displayImage ? (
           <Image source={{ uri: displayImage }} style={styles.compactImage} />
         ) : (
-          <View style={[styles.compactImagePlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+          <View
+            style={[
+              styles.compactImagePlaceholder,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
             <Feather name="package" size={20} color={theme.textSecondary} />
           </View>
         )}
@@ -91,13 +101,21 @@ export function ProductCard({ product, onPress, compact = false, testID }: Produ
       {displayImage ? (
         <Image source={{ uri: displayImage }} style={styles.image} />
       ) : (
-        <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+        <View
+          style={[
+            styles.imagePlaceholder,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
+        >
           <Feather name="package" size={32} color={theme.textSecondary} />
         </View>
       )}
       <View style={styles.content}>
         {displayBrand ? (
-          <ThemedText type="caption" style={{ color: theme.textSecondary, marginBottom: Spacing.xs }}>
+          <ThemedText
+            type="caption"
+            style={{ color: theme.textSecondary, marginBottom: Spacing.xs }}
+          >
             {displayBrand.toUpperCase()}
           </ThemedText>
         ) : null}
@@ -111,7 +129,12 @@ export function ProductCard({ product, onPress, compact = false, testID }: Produ
             </ThemedText>
           ) : null}
           {product.recommendedShade ? (
-            <View style={[styles.shadeBadge, { backgroundColor: theme.primary + "20" }]}>
+            <View
+              style={[
+                styles.shadeBadge,
+                { backgroundColor: theme.primary + "20" },
+              ]}
+            >
               <ThemedText type="caption" style={{ color: theme.primary }}>
                 {product.recommendedShade}
               </ThemedText>

@@ -35,7 +35,12 @@ export function TutorialStep({ step, testID }: TutorialStepProps) {
             </ThemedText>
           ) : null}
           {step.productUsed ? (
-            <View style={[styles.productBadge, { backgroundColor: theme.primary + "15" }]}>
+            <View
+              style={[
+                styles.productBadge,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
               <ThemedText type="caption" style={{ color: theme.primary }}>
                 {step.productUsed}
               </ThemedText>

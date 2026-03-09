@@ -26,16 +26,28 @@ export interface IStorage {
   getVideoAnalysis(id: number): Promise<VideoAnalysis | undefined>;
   getVideoAnalysisByUrl(url: string): Promise<VideoAnalysis | undefined>;
   getAllVideoAnalyses(): Promise<VideoAnalysis[]>;
-  getVideoAnalysesWithProductCounts(): Promise<(VideoAnalysis & { productCount: number; matchedProductCount: number })[]>;
+  getVideoAnalysesWithProductCounts(): Promise<
+    (VideoAnalysis & { productCount: number; matchedProductCount: number })[]
+  >;
   createVideoAnalysis(analysis: InsertVideoAnalysis): Promise<VideoAnalysis>;
-  updateVideoAnalysis(id: number, analysis: Partial<InsertVideoAnalysis>): Promise<VideoAnalysis | undefined>;
+  updateVideoAnalysis(
+    id: number,
+    analysis: Partial<InsertVideoAnalysis>,
+  ): Promise<VideoAnalysis | undefined>;
 
   getDetectedProducts(videoAnalysisId: number): Promise<DetectedProduct[]>;
-  createDetectedProduct(product: InsertDetectedProduct): Promise<DetectedProduct>;
-  updateDetectedProduct(id: number, product: Partial<InsertDetectedProduct>): Promise<DetectedProduct | undefined>;
+  createDetectedProduct(
+    product: InsertDetectedProduct,
+  ): Promise<DetectedProduct>;
+  updateDetectedProduct(
+    id: number,
+    product: Partial<InsertDetectedProduct>,
+  ): Promise<DetectedProduct | undefined>;
 
   getSavedLook(id: number): Promise<SavedLook | undefined>;
-  getAllSavedLooks(): Promise<(SavedLook & { videoAnalysis?: VideoAnalysis; productCount?: number })[]>;
+  getAllSavedLooks(): Promise<
+    (SavedLook & { videoAnalysis?: VideoAnalysis; productCount?: number })[]
+  >;
   createSavedLook(look: InsertSavedLook): Promise<SavedLook>;
   deleteSavedLook(id: number): Promise<void>;
 
@@ -50,7 +62,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
     return user || undefined;
   }
 
@@ -60,43 +75,70 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVideoAnalysis(id: number): Promise<VideoAnalysis | undefined> {
-    const [analysis] = await db.select().from(videoAnalyses).where(eq(videoAnalyses.id, id));
+    const [analysis] = await db
+      .select()
+      .from(videoAnalyses)
+      .where(eq(videoAnalyses.id, id));
     return analysis || undefined;
   }
 
   async getVideoAnalysisByUrl(url: string): Promise<VideoAnalysis | undefined> {
-    const [analysis] = await db.select().from(videoAnalyses).where(eq(videoAnalyses.videoUrl, url));
+    const [analysis] = await db
+      .select()
+      .from(videoAnalyses)
+      .where(eq(videoAnalyses.videoUrl, url));
     return analysis || undefined;
   }
 
   async getAllVideoAnalyses(): Promise<VideoAnalysis[]> {
-    return db.select().from(videoAnalyses).orderBy(desc(videoAnalyses.createdAt));
+    return db
+      .select()
+      .from(videoAnalyses)
+      .orderBy(desc(videoAnalyses.createdAt));
   }
 
-  async getVideoAnalysesWithProductCounts(): Promise<(VideoAnalysis & { productCount: number; matchedProductCount: number })[]> {
-    const analyses = await db.select().from(videoAnalyses).orderBy(desc(videoAnalyses.createdAt));
-    
+  async getVideoAnalysesWithProductCounts(): Promise<
+    (VideoAnalysis & { productCount: number; matchedProductCount: number })[]
+  > {
+    const analyses = await db
+      .select()
+      .from(videoAnalyses)
+      .orderBy(desc(videoAnalyses.createdAt));
+
     const result = await Promise.all(
       analyses.map(async (analysis) => {
-        const products = await db.select().from(detectedProducts).where(eq(detectedProducts.videoAnalysisId, analysis.id));
-        const matchedCount = products.filter(p => p.matchedProductName).length;
+        const products = await db
+          .select()
+          .from(detectedProducts)
+          .where(eq(detectedProducts.videoAnalysisId, analysis.id));
+        const matchedCount = products.filter(
+          (p) => p.matchedProductName,
+        ).length;
         return {
           ...analysis,
           productCount: products.length,
           matchedProductCount: matchedCount,
         };
-      })
+      }),
     );
-    
+
     return result;
   }
 
-  async createVideoAnalysis(analysis: InsertVideoAnalysis): Promise<VideoAnalysis> {
-    const [created] = await db.insert(videoAnalyses).values(analysis).returning();
+  async createVideoAnalysis(
+    analysis: InsertVideoAnalysis,
+  ): Promise<VideoAnalysis> {
+    const [created] = await db
+      .insert(videoAnalyses)
+      .values(analysis)
+      .returning();
     return created;
   }
 
-  async updateVideoAnalysis(id: number, analysis: Partial<InsertVideoAnalysis>): Promise<VideoAnalysis | undefined> {
+  async updateVideoAnalysis(
+    id: number,
+    analysis: Partial<InsertVideoAnalysis>,
+  ): Promise<VideoAnalysis | undefined> {
     const [updated] = await db
       .update(videoAnalyses)
       .set({ ...analysis, updatedAt: new Date() })
@@ -105,16 +147,29 @@ export class DatabaseStorage implements IStorage {
     return updated || undefined;
   }
 
-  async getDetectedProducts(videoAnalysisId: number): Promise<DetectedProduct[]> {
-    return db.select().from(detectedProducts).where(eq(detectedProducts.videoAnalysisId, videoAnalysisId));
+  async getDetectedProducts(
+    videoAnalysisId: number,
+  ): Promise<DetectedProduct[]> {
+    return db
+      .select()
+      .from(detectedProducts)
+      .where(eq(detectedProducts.videoAnalysisId, videoAnalysisId));
   }
 
-  async createDetectedProduct(product: InsertDetectedProduct): Promise<DetectedProduct> {
-    const [created] = await db.insert(detectedProducts).values(product).returning();
+  async createDetectedProduct(
+    product: InsertDetectedProduct,
+  ): Promise<DetectedProduct> {
+    const [created] = await db
+      .insert(detectedProducts)
+      .values(product)
+      .returning();
     return created;
   }
 
-  async updateDetectedProduct(id: number, product: Partial<InsertDetectedProduct>): Promise<DetectedProduct | undefined> {
+  async updateDetectedProduct(
+    id: number,
+    product: Partial<InsertDetectedProduct>,
+  ): Promise<DetectedProduct | undefined> {
     const [updated] = await db
       .update(detectedProducts)
       .set(product)
@@ -124,23 +179,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSavedLook(id: number): Promise<SavedLook | undefined> {
-    const [look] = await db.select().from(savedLooks).where(eq(savedLooks.id, id));
+    const [look] = await db
+      .select()
+      .from(savedLooks)
+      .where(eq(savedLooks.id, id));
     return look || undefined;
   }
 
-  async getAllSavedLooks(): Promise<(SavedLook & { videoAnalysis?: VideoAnalysis; productCount?: number })[]> {
-    const looks = await db.select().from(savedLooks).orderBy(desc(savedLooks.createdAt));
+  async getAllSavedLooks(): Promise<
+    (SavedLook & { videoAnalysis?: VideoAnalysis; productCount?: number })[]
+  > {
+    const looks = await db
+      .select()
+      .from(savedLooks)
+      .orderBy(desc(savedLooks.createdAt));
 
     const result = await Promise.all(
       looks.map(async (look) => {
-        const [analysis] = await db.select().from(videoAnalyses).where(eq(videoAnalyses.id, look.videoAnalysisId));
-        const products = await db.select().from(detectedProducts).where(eq(detectedProducts.videoAnalysisId, look.videoAnalysisId));
+        const [analysis] = await db
+          .select()
+          .from(videoAnalyses)
+          .where(eq(videoAnalyses.id, look.videoAnalysisId));
+        const products = await db
+          .select()
+          .from(detectedProducts)
+          .where(eq(detectedProducts.videoAnalysisId, look.videoAnalysisId));
         return {
           ...look,
           videoAnalysis: analysis,
           productCount: products.length,
         };
-      })
+      }),
     );
 
     return result;
@@ -160,7 +229,9 @@ export class DatabaseStorage implements IStorage {
     return profile || undefined;
   }
 
-  async createOrUpdateUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+  async createOrUpdateUserProfile(
+    profile: InsertUserProfile,
+  ): Promise<UserProfile> {
     const existing = await this.getUserProfile();
     if (existing) {
       const [updated] = await db

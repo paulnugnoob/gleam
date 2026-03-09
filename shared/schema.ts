@@ -1,5 +1,16 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, serial, integer, timestamp, jsonb, boolean, real, date } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  serial,
+  integer,
+  timestamp,
+  jsonb,
+  boolean,
+  real,
+  date,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -78,8 +89,12 @@ export const videoAnalyses = pgTable("video_analyses", {
   status: text("status").notNull().default("pending"),
   tutorialSteps: jsonb("tutorial_steps").$type<TutorialStep[]>(),
   debugData: jsonb("debug_data").$type<DebugData>(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const videoAnalysesRelations = relations(videoAnalyses, ({ many }) => ({
@@ -88,7 +103,9 @@ export const videoAnalysesRelations = relations(videoAnalyses, ({ many }) => ({
 
 export const detectedProducts = pgTable("detected_products", {
   id: serial("id").primaryKey(),
-  videoAnalysisId: integer("video_analysis_id").notNull().references(() => videoAnalyses.id, { onDelete: "cascade" }),
+  videoAnalysisId: integer("video_analysis_id")
+    .notNull()
+    .references(() => videoAnalyses.id, { onDelete: "cascade" }),
   aiDetectedName: text("ai_detected_name").notNull(),
   aiDetectedBrand: text("ai_detected_brand"),
   aiDetectedType: text("ai_detected_type"),
@@ -111,21 +128,30 @@ export const detectedProducts = pgTable("detected_products", {
   matchScore: jsonb("match_score").$type<MatchScore>(),
   recommendedShade: text("recommended_shade"),
   timestamp: text("timestamp"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
-export const detectedProductsRelations = relations(detectedProducts, ({ one }) => ({
-  videoAnalysis: one(videoAnalyses, {
-    fields: [detectedProducts.videoAnalysisId],
-    references: [videoAnalyses.id],
+export const detectedProductsRelations = relations(
+  detectedProducts,
+  ({ one }) => ({
+    videoAnalysis: one(videoAnalyses, {
+      fields: [detectedProducts.videoAnalysisId],
+      references: [videoAnalyses.id],
+    }),
   }),
-}));
+);
 
 export const savedLooks = pgTable("saved_looks", {
   id: serial("id").primaryKey(),
-  videoAnalysisId: integer("video_analysis_id").notNull().references(() => videoAnalyses.id, { onDelete: "cascade" }),
+  videoAnalysisId: integer("video_analysis_id")
+    .notNull()
+    .references(() => videoAnalyses.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const savedLooksRelations = relations(savedLooks, ({ one }) => ({
@@ -141,17 +167,25 @@ export const userProfiles = pgTable("user_profiles", {
   avatarUrl: text("avatar_url"),
   skinToneData: jsonb("skin_tone_data").$type<SkinToneData>(),
   selfieUrls: jsonb("selfie_urls").$type<string[]>(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
-export const insertVideoAnalysisSchema = createInsertSchema(videoAnalyses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertVideoAnalysisSchema = createInsertSchema(videoAnalyses).omit(
+  {
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  },
+);
 
-export const insertDetectedProductSchema = createInsertSchema(detectedProducts).omit({
+export const insertDetectedProductSchema = createInsertSchema(
+  detectedProducts,
+).omit({
   id: true,
   createdAt: true,
 });
@@ -224,15 +258,25 @@ export const creators = pgTable("creators", {
   avatarUrl: text("avatar_url"),
   source: text("source").notNull().default("manual"),
   isActive: boolean("is_active").notNull().default(true),
-  firstSeenAt: timestamp("first_seen_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  lastSeenAt: timestamp("last_seen_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  firstSeenAt: timestamp("first_seen_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  lastSeenAt: timestamp("last_seen_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
-  creatorId: integer("creator_id").notNull().references(() => creators.id, { onDelete: "cascade" }),
+  creatorId: integer("creator_id")
+    .notNull()
+    .references(() => creators.id, { onDelete: "cascade" }),
   platformPostId: text("platform_post_id"),
   postUrl: text("post_url"),
   caption: text("caption"),
@@ -242,13 +286,19 @@ export const posts = pgTable("posts", {
   comments: integer("comments"),
   shares: integer("shares"),
   rawJson: jsonb("raw_json"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const contentSignals = pgTable("content_signals", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  postId: integer("post_id")
+    .notNull()
+    .references(() => posts.id, { onDelete: "cascade" }),
   hasGrwm: boolean("has_grwm").notNull().default(false),
   hasTutorial: boolean("has_tutorial").notNull().default(false),
   hasMakeup: boolean("has_makeup").notNull().default(false),
@@ -256,12 +306,16 @@ export const contentSignals = pgTable("content_signals", {
   confidence: real("confidence").notNull().default(0),
   transcriptExcerpt: text("transcript_excerpt"),
   onscreenTextExcerpt: text("onscreen_text_excerpt"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const creatorFeatures = pgTable("creator_features", {
   id: serial("id").primaryKey(),
-  creatorId: integer("creator_id").notNull().references(() => creators.id, { onDelete: "cascade" }),
+  creatorId: integer("creator_id")
+    .notNull()
+    .references(() => creators.id, { onDelete: "cascade" }),
   windowDays: integer("window_days").notNull().default(90),
   samplePosts: integer("sample_posts").notNull().default(0),
   grwmRatio: real("grwm_ratio").notNull().default(0),
@@ -271,7 +325,9 @@ export const creatorFeatures = pgTable("creator_features", {
   medianViews: real("median_views"),
   pctPostsOver200kViews: real("pct_posts_over_200k_views"),
   lastPostAt: timestamp("last_post_at"),
-  computedAt: timestamp("computed_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  computedAt: timestamp("computed_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const rankingSnapshots = pgTable("ranking_snapshots", {
@@ -279,17 +335,25 @@ export const rankingSnapshots = pgTable("ranking_snapshots", {
   snapshotDate: date("snapshot_date").notNull(),
   windowDays: integer("window_days").notNull().default(90),
   notes: text("notes"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const rankingEntries = pgTable("ranking_entries", {
   id: serial("id").primaryKey(),
-  snapshotId: integer("snapshot_id").notNull().references(() => rankingSnapshots.id, { onDelete: "cascade" }),
-  creatorId: integer("creator_id").notNull().references(() => creators.id, { onDelete: "cascade" }),
+  snapshotId: integer("snapshot_id")
+    .notNull()
+    .references(() => rankingSnapshots.id, { onDelete: "cascade" }),
+  creatorId: integer("creator_id")
+    .notNull()
+    .references(() => creators.id, { onDelete: "cascade" }),
   rank: integer("rank").notNull(),
   score: real("score").notNull(),
   scoreBreakdown: jsonb("score_breakdown").$type<ScoreBreakdown>(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const jobs = pgTable("jobs", {
@@ -300,7 +364,9 @@ export const jobs = pgTable("jobs", {
   startedAt: timestamp("started_at"),
   finishedAt: timestamp("finished_at"),
   error: text("error"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 // Relations
@@ -311,7 +377,10 @@ export const creatorsRelations = relations(creators, ({ many }) => ({
 }));
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
-  creator: one(creators, { fields: [posts.creatorId], references: [creators.id] }),
+  creator: one(creators, {
+    fields: [posts.creatorId],
+    references: [creators.id],
+  }),
   signals: many(contentSignals),
 }));
 
@@ -319,44 +388,96 @@ export const contentSignalsRelations = relations(contentSignals, ({ one }) => ({
   post: one(posts, { fields: [contentSignals.postId], references: [posts.id] }),
 }));
 
-export const creatorFeaturesRelations = relations(creatorFeatures, ({ one }) => ({
-  creator: one(creators, { fields: [creatorFeatures.creatorId], references: [creators.id] }),
-}));
+export const creatorFeaturesRelations = relations(
+  creatorFeatures,
+  ({ one }) => ({
+    creator: one(creators, {
+      fields: [creatorFeatures.creatorId],
+      references: [creators.id],
+    }),
+  }),
+);
 
-export const rankingSnapshotsRelations = relations(rankingSnapshots, ({ many }) => ({
-  entries: many(rankingEntries),
-}));
+export const rankingSnapshotsRelations = relations(
+  rankingSnapshots,
+  ({ many }) => ({
+    entries: many(rankingEntries),
+  }),
+);
 
 export const rankingEntriesRelations = relations(rankingEntries, ({ one }) => ({
-  snapshot: one(rankingSnapshots, { fields: [rankingEntries.snapshotId], references: [rankingSnapshots.id] }),
-  creator: one(creators, { fields: [rankingEntries.creatorId], references: [creators.id] }),
+  snapshot: one(rankingSnapshots, {
+    fields: [rankingEntries.snapshotId],
+    references: [rankingSnapshots.id],
+  }),
+  creator: one(creators, {
+    fields: [rankingEntries.creatorId],
+    references: [creators.id],
+  }),
 }));
 
 export const humanLabels = pgTable("human_labels", {
   id: serial("id").primaryKey(),
-  snapshotId: integer("snapshot_id").notNull().references(() => rankingSnapshots.id, { onDelete: "cascade" }),
-  creatorId: integer("creator_id").notNull().references(() => creators.id, { onDelete: "cascade" }),
+  snapshotId: integer("snapshot_id")
+    .notNull()
+    .references(() => rankingSnapshots.id, { onDelete: "cascade" }),
+  creatorId: integer("creator_id")
+    .notNull()
+    .references(() => creators.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
   note: text("note"),
   labeledBy: text("labeled_by").default("admin"),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const humanLabelsRelations = relations(humanLabels, ({ one }) => ({
-  snapshot: one(rankingSnapshots, { fields: [humanLabels.snapshotId], references: [rankingSnapshots.id] }),
-  creator: one(creators, { fields: [humanLabels.creatorId], references: [creators.id] }),
+  snapshot: one(rankingSnapshots, {
+    fields: [humanLabels.snapshotId],
+    references: [rankingSnapshots.id],
+  }),
+  creator: one(creators, {
+    fields: [humanLabels.creatorId],
+    references: [creators.id],
+  }),
 }));
 
 // Insert schemas
-export const insertHumanLabelSchema = createInsertSchema(humanLabels).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertCreatorSchema = createInsertSchema(creators).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertPostSchema = createInsertSchema(posts).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertContentSignalSchema = createInsertSchema(contentSignals).omit({ id: true, createdAt: true });
-export const insertCreatorFeatureSchema = createInsertSchema(creatorFeatures).omit({ id: true });
-export const insertRankingSnapshotSchema = createInsertSchema(rankingSnapshots).omit({ id: true, createdAt: true });
-export const insertRankingEntrySchema = createInsertSchema(rankingEntries).omit({ id: true, createdAt: true });
-export const insertJobSchema = createInsertSchema(jobs).omit({ id: true, createdAt: true });
+export const insertHumanLabelSchema = createInsertSchema(humanLabels).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertCreatorSchema = createInsertSchema(creators).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertPostSchema = createInsertSchema(posts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertContentSignalSchema = createInsertSchema(
+  contentSignals,
+).omit({ id: true, createdAt: true });
+export const insertCreatorFeatureSchema = createInsertSchema(
+  creatorFeatures,
+).omit({ id: true });
+export const insertRankingSnapshotSchema = createInsertSchema(
+  rankingSnapshots,
+).omit({ id: true, createdAt: true });
+export const insertRankingEntrySchema = createInsertSchema(rankingEntries).omit(
+  { id: true, createdAt: true },
+);
+export const insertJobSchema = createInsertSchema(jobs).omit({
+  id: true,
+  createdAt: true,
+});
 
 // Types
 export type Creator = typeof creators.$inferSelect;

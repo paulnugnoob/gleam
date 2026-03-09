@@ -61,7 +61,12 @@ export default function ProductDetailScreen() {
           {displayImage ? (
             <Image source={{ uri: displayImage }} style={styles.heroImage} />
           ) : (
-            <View style={[styles.heroImagePlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+            <View
+              style={[
+                styles.heroImagePlaceholder,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
               <Feather name="package" size={64} color={theme.textSecondary} />
             </View>
           )}
@@ -70,7 +75,10 @@ export default function ProductDetailScreen() {
         <View style={styles.content}>
           <Animated.View entering={FadeInDown.delay(100).duration(400)}>
             {displayBrand ? (
-              <ThemedText type="caption" style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}>
+              <ThemedText
+                type="caption"
+                style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}
+              >
                 {displayBrand.toUpperCase()}
               </ThemedText>
             ) : null}
@@ -78,7 +86,12 @@ export default function ProductDetailScreen() {
               {displayName}
             </ThemedText>
             {displayPrice ? (
-              <View style={[styles.priceBadge, { backgroundColor: theme.primary + "15" }]}>
+              <View
+                style={[
+                  styles.priceBadge,
+                  { backgroundColor: theme.primary + "15" },
+                ]}
+              >
                 <ThemedText type="h2" style={{ color: theme.primary }}>
                   ${displayPrice}
                 </ThemedText>
@@ -88,13 +101,27 @@ export default function ProductDetailScreen() {
 
           {product.recommendedShade ? (
             <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-              <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
+              <View
+                style={[
+                  styles.section,
+                  { backgroundColor: theme.backgroundDefault },
+                ]}
+              >
                 <View style={styles.sectionHeader}>
-                  <Feather name="check-circle" size={20} color={theme.success} />
+                  <Feather
+                    name="check-circle"
+                    size={20}
+                    color={theme.success}
+                  />
                   <ThemedText type="h3">Recommended Shade</ThemedText>
                 </View>
                 <View style={styles.shadeContainer}>
-                  <View style={[styles.shadeSwatch, { backgroundColor: theme.primary }]} />
+                  <View
+                    style={[
+                      styles.shadeSwatch,
+                      { backgroundColor: theme.primary },
+                    ]}
+                  />
                   <ThemedText type="body" style={styles.shadeName}>
                     {product.recommendedShade}
                   </ThemedText>
@@ -108,7 +135,10 @@ export default function ProductDetailScreen() {
             <Animated.View entering={FadeInDown.delay(200).duration(400)}>
               <Pressable
                 onPress={handleNavigateToSelfie}
-                style={[styles.section, { backgroundColor: theme.backgroundDefault }]}
+                style={[
+                  styles.section,
+                  { backgroundColor: theme.backgroundDefault },
+                ]}
               >
                 <View style={styles.sectionHeader}>
                   <Feather name="camera" size={20} color={theme.primary} />
@@ -127,7 +157,12 @@ export default function ProductDetailScreen() {
 
           {colors.length > 0 ? (
             <Animated.View entering={FadeInDown.delay(300).duration(400)}>
-              <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
+              <View
+                style={[
+                  styles.section,
+                  { backgroundColor: theme.backgroundDefault },
+                ]}
+              >
                 <ThemedText type="h3" style={{ marginBottom: Spacing.lg }}>
                   Available Shades
                 </ThemedText>
@@ -135,9 +170,19 @@ export default function ProductDetailScreen() {
                   {colors.slice(0, 12).map((color, index) => (
                     <View key={index} style={styles.colorItem}>
                       <View
-                        style={[styles.colorSwatch, { backgroundColor: color.hex_value || theme.backgroundTertiary }]}
+                        style={[
+                          styles.colorSwatch,
+                          {
+                            backgroundColor:
+                              color.hex_value || theme.backgroundTertiary,
+                          },
+                        ]}
                       />
-                      <ThemedText type="caption" numberOfLines={1} style={styles.colorName}>
+                      <ThemedText
+                        type="caption"
+                        numberOfLines={1}
+                        style={styles.colorName}
+                      >
                         {color.colour_name}
                       </ThemedText>
                     </View>
@@ -149,11 +194,19 @@ export default function ProductDetailScreen() {
 
           {product.aiDetectedDescription ? (
             <Animated.View entering={FadeInDown.delay(400).duration(400)}>
-              <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
+              <View
+                style={[
+                  styles.section,
+                  { backgroundColor: theme.backgroundDefault },
+                ]}
+              >
                 <ThemedText type="h3" style={{ marginBottom: Spacing.md }}>
                   Description
                 </ThemedText>
-                <ThemedText type="body" style={{ color: theme.textSecondary, lineHeight: 24 }}>
+                <ThemedText
+                  type="body"
+                  style={{ color: theme.textSecondary, lineHeight: 24 }}
+                >
                   {product.aiDetectedDescription}
                 </ThemedText>
               </View>
@@ -164,7 +217,13 @@ export default function ProductDetailScreen() {
 
       <Animated.View
         entering={FadeInDown.delay(500).duration(400)}
-        style={[styles.bottomBar, { paddingBottom: insets.bottom + Spacing.lg, backgroundColor: theme.backgroundRoot }]}
+        style={[
+          styles.bottomBar,
+          {
+            paddingBottom: insets.bottom + Spacing.lg,
+            backgroundColor: theme.backgroundRoot,
+          },
+        ]}
       >
         <Button onPress={handleAddToList} testID="button-add-to-list">
           Add to Shopping List

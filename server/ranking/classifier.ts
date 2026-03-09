@@ -1,34 +1,91 @@
 import { db } from "../db";
-import { posts, contentSignals, type InsertContentSignal } from "../../shared/schema";
-import { eq, isNull, sql } from "drizzle-orm";
+import {
+  posts,
+  contentSignals,
+  type InsertContentSignal,
+} from "../../shared/schema";
+import { and, eq, isNull } from "drizzle-orm";
 
 const GRWM_KEYWORDS = [
-  "grwm", "get ready with me", "getreadywithme", "get ready w me",
-  "getting ready", "morning routine makeup", "night out prep",
+  "grwm",
+  "get ready with me",
+  "getreadywithme",
+  "get ready w me",
+  "getting ready",
+  "morning routine makeup",
+  "night out prep",
 ];
 
 const TUTORIAL_KEYWORDS = [
-  "tutorial", "how to", "howto", "step by step", "step-by-step",
-  "beginners guide", "beginner guide", "makeup look", "eye look",
-  "full glam", "smokey eye", "cut crease", "contour", "baking",
-  "makeup routine", "beauty routine", "makeup tips", "beauty tips",
-  "makeup hack", "beauty hack",
+  "tutorial",
+  "how to",
+  "howto",
+  "step by step",
+  "step-by-step",
+  "beginners guide",
+  "beginner guide",
+  "makeup look",
+  "eye look",
+  "full glam",
+  "smokey eye",
+  "cut crease",
+  "contour",
+  "baking",
+  "makeup routine",
+  "beauty routine",
+  "makeup tips",
+  "beauty tips",
+  "makeup hack",
+  "beauty hack",
 ];
 
 const MAKEUP_KEYWORDS = [
-  "makeup", "make up", "foundation", "concealer", "lipstick",
-  "lip gloss", "lipgloss", "eyeshadow", "eye shadow", "mascara",
-  "eyeliner", "blush", "bronzer", "highlighter", "contour",
-  "primer", "setting spray", "setting powder", "beauty blender",
-  "brush", "palette", "shade", "swatch", "pigment", "coverage",
-  "matte", "dewy", "glam", "beat face", "snatched", "flawless",
-  "skincare", "moisturizer", "serum", "sunscreen", "cleanser",
-  "toner", "exfoliate", "retinol", "niacinamide", "hyaluronic",
+  "makeup",
+  "make up",
+  "foundation",
+  "concealer",
+  "lipstick",
+  "lip gloss",
+  "lipgloss",
+  "eyeshadow",
+  "eye shadow",
+  "mascara",
+  "eyeliner",
+  "blush",
+  "bronzer",
+  "highlighter",
+  "contour",
+  "primer",
+  "setting spray",
+  "setting powder",
+  "beauty blender",
+  "brush",
+  "palette",
+  "shade",
+  "swatch",
+  "pigment",
+  "coverage",
+  "matte",
+  "dewy",
+  "glam",
+  "beat face",
+  "snatched",
+  "flawless",
+  "skincare",
+  "moisturizer",
+  "serum",
+  "sunscreen",
+  "cleanser",
+  "toner",
+  "exfoliate",
+  "retinol",
+  "niacinamide",
+  "hyaluronic",
 ];
 
 function matchKeywords(text: string, keywords: string[]): string[] {
   const lower = text.toLowerCase();
-  return keywords.filter(kw => lower.includes(kw));
+  return keywords.filter((kw) => lower.includes(kw));
 }
 
 export interface ClassifyResult {
@@ -41,7 +98,13 @@ export interface ClassifyResult {
 
 export function classifyCaption(caption: string): ClassifyResult {
   if (!caption) {
-    return { hasGrwm: false, hasTutorial: false, hasMakeup: false, keywordHits: [], confidence: 0 };
+    return {
+      hasGrwm: false,
+      hasTutorial: false,
+      hasMakeup: false,
+      keywordHits: [],
+      confidence: 0,
+    };
   }
 
   const grwmHits = matchKeywords(caption, GRWM_KEYWORDS);
@@ -64,16 +127,18 @@ export function classifyCaption(caption: string): ClassifyResult {
   return { hasGrwm, hasTutorial, hasMakeup, keywordHits: allHits, confidence };
 }
 
-export async function classifyUnprocessedPosts(creatorId?: number): Promise<number> {
-  const query = db
+export async function classifyUnprocessedPosts(
+  creatorId?: number,
+): Promise<number> {
+  const unprocessed = await db
     .select({ post: posts })
     .from(posts)
     .leftJoin(contentSignals, eq(posts.id, contentSignals.postId))
-    .where(isNull(contentSignals.id));
-
-  const unprocessed = creatorId
-    ? await query.where(eq(posts.creatorId, creatorId))
-    : await query;
+    .where(
+      creatorId
+        ? and(isNull(contentSignals.id), eq(posts.creatorId, creatorId))
+        : isNull(contentSignals.id),
+    );
 
   let count = 0;
   for (const { post } of unprocessed) {

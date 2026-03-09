@@ -31,7 +31,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import type { RootStackParamList } from "@/navigation/RootStackNavigator";
-import type { VideoAnalysis, DetectedProduct, TutorialStep as TutorialStepType } from "@shared/schema";
+import type {
+  VideoAnalysis,
+  DetectedProduct,
+  TutorialStep as TutorialStepType,
+} from "@shared/schema";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type LookDetailRouteProp = RouteProp<RootStackParamList, "LookDetail">;
@@ -68,11 +72,17 @@ function StepRow({
   onProductPress: (product: DetectedProduct) => void;
 }) {
   const { theme } = useTheme();
-  
+
   const stepProducts = products.filter(
-    p => p.matchedProductName && step.productUsed && 
-    (step.productUsed.toLowerCase().includes(p.matchedProductName?.toLowerCase() || "") ||
-     p.aiDetectedName?.toLowerCase().includes(step.productUsed.toLowerCase()))
+    (p) =>
+      p.matchedProductName &&
+      step.productUsed &&
+      (step.productUsed
+        .toLowerCase()
+        .includes(p.matchedProductName?.toLowerCase() || "") ||
+        p.aiDetectedName
+          ?.toLowerCase()
+          .includes(step.productUsed.toLowerCase())),
   );
 
   return (
@@ -110,7 +120,10 @@ function StepRow({
               <Pressable
                 key={product.id}
                 onPress={() => onProductPress(product)}
-                style={[styles.productChip, { backgroundColor: theme.backgroundSecondary }]}
+                style={[
+                  styles.productChip,
+                  { backgroundColor: theme.backgroundSecondary },
+                ]}
               >
                 {product.matchedProductImage ? (
                   <Image
@@ -118,14 +131,21 @@ function StepRow({
                     style={styles.productChipImage}
                   />
                 ) : null}
-                <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                <ThemedText
+                  type="small"
+                  style={{ color: theme.textSecondary }}
+                  numberOfLines={1}
+                >
                   {product.matchedProductName || product.aiDetectedName}
                 </ThemedText>
               </Pressable>
             ))}
           </View>
         ) : step.productUsed ? (
-          <ThemedText type="small" style={{ color: theme.textTertiary, marginTop: 4 }}>
+          <ThemedText
+            type="small"
+            style={{ color: theme.textTertiary, marginTop: 4 }}
+          >
             {step.productUsed}
           </ThemedText>
         ) : null}
@@ -142,7 +162,7 @@ function ProductsTab({
   onProductPress: (product: DetectedProduct) => void;
 }) {
   const { theme } = useTheme();
-  const matchedProducts = products.filter(p => p.matchedProductName);
+  const matchedProducts = products.filter((p) => p.matchedProductName);
 
   if (matchedProducts.length === 0) {
     return (
@@ -160,7 +180,10 @@ function ProductsTab({
         <Pressable
           key={product.id}
           onPress={() => onProductPress(product)}
-          style={[styles.productCard, { backgroundColor: theme.backgroundSecondary }]}
+          style={[
+            styles.productCard,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
         >
           {product.matchedProductImage ? (
             <Image
@@ -168,21 +191,40 @@ function ProductsTab({
               style={styles.productImage}
             />
           ) : (
-            <View style={[styles.productImagePlaceholder, { backgroundColor: theme.backgroundDefault }]}>
+            <View
+              style={[
+                styles.productImagePlaceholder,
+                { backgroundColor: theme.backgroundDefault },
+              ]}
+            >
               <Feather name="package" size={20} color={theme.textTertiary} />
             </View>
           )}
           <View style={styles.productInfo}>
-            <ThemedText type="small" style={{ color: theme.text }} numberOfLines={2}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.text }}
+              numberOfLines={2}
+            >
               {product.matchedProductName}
             </ThemedText>
             {product.matchedProductBrand ? (
-              <ThemedText type="small" style={{ color: theme.textTertiary, marginTop: 2 }}>
+              <ThemedText
+                type="small"
+                style={{ color: theme.textTertiary, marginTop: 2 }}
+              >
                 {product.matchedProductBrand}
               </ThemedText>
             ) : null}
             {product.matchedProductPrice ? (
-              <ThemedText type="body" style={{ color: theme.primary, fontWeight: "600", marginTop: 4 }}>
+              <ThemedText
+                type="body"
+                style={{
+                  color: theme.primary,
+                  fontWeight: "600",
+                  marginTop: 4,
+                }}
+              >
                 ${product.matchedProductPrice}
               </ThemedText>
             ) : null}
@@ -205,10 +247,18 @@ function LoadingState({ thumbnailUrl }: { thumbnailUrl?: string | null }) {
           blurRadius={Platform.OS === "ios" ? 25 : 15}
         />
       ) : (
-        <View style={[styles.loadingBackground, { backgroundColor: theme.backgroundSecondary }]} />
+        <View
+          style={[
+            styles.loadingBackground,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
+        />
       )}
       <BlurView intensity={80} style={styles.loadingOverlay} tint="dark">
-        <Animated.View entering={FadeIn.delay(300).duration(800)} style={styles.loadingContent}>
+        <Animated.View
+          entering={FadeIn.delay(300).duration(800)}
+          style={styles.loadingContent}
+        >
           <View style={styles.loadingPulse}>
             <Feather name="layers" size={28} color="rgba(255,255,255,0.9)" />
           </View>
@@ -241,7 +291,9 @@ export default function LookDetailScreen() {
   const analysis = analysisData?.analysis;
   const products = analysisData?.products || [];
   const tutorialSteps = analysis?.tutorialSteps || [];
-  const matchedProductsCount = products.filter(p => p.matchedProductName).length;
+  const matchedProductsCount = products.filter(
+    (p) => p.matchedProductName,
+  ).length;
 
   const videoSource = analysis?.videoUrl || "";
   const player = useVideoPlayer(videoSource, (p: VideoPlayer) => {
@@ -255,12 +307,12 @@ export default function LookDetailScreen() {
 
   useEffect(() => {
     if (!player) return;
-    
+
     const interval = setInterval(() => {
       if (player.playing && tutorialSteps.length > 0) {
         const currentTime = player.currentTime;
         let foundIndex = 0;
-        
+
         for (let i = tutorialSteps.length - 1; i >= 0; i--) {
           const step = tutorialSteps[i];
           if (step.timestamp) {
@@ -271,7 +323,7 @@ export default function LookDetailScreen() {
             }
           }
         }
-        
+
         if (foundIndex !== activeStepIndex) {
           setActiveStepIndex(foundIndex);
         }
@@ -281,35 +333,47 @@ export default function LookDetailScreen() {
     return () => clearInterval(interval);
   }, [player, tutorialSteps, activeStepIndex]);
 
-  const updateDepth = useCallback((newDepth: number) => {
-    const clampedDepth = Math.max(DEPTH_FULL, Math.min(DEPTH_EXPANDED, newDepth));
-    if (clampedDepth !== depth) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setDepth(clampedDepth);
-      depthValue.value = withSpring(clampedDepth, {
-        damping: 25,
-        stiffness: 180,
-      });
-    }
-  }, [depth, depthValue]);
-
-  const handleStepPress = useCallback((step: TutorialStepType, index: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setActiveStepIndex(index);
-    if (step.timestamp && player) {
-      const seconds = parseTimestamp(step.timestamp);
-      player.currentTime = seconds;
-      if (!player.playing) {
-        player.play();
-        setIsPlaying(true);
+  const updateDepth = useCallback(
+    (newDepth: number) => {
+      const clampedDepth = Math.max(
+        DEPTH_FULL,
+        Math.min(DEPTH_EXPANDED, newDepth),
+      );
+      if (clampedDepth !== depth) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setDepth(clampedDepth);
+        depthValue.value = withSpring(clampedDepth, {
+          damping: 25,
+          stiffness: 180,
+        });
       }
-    }
-  }, [player]);
+    },
+    [depth, depthValue],
+  );
 
-  const handleProductPress = useCallback((product: DetectedProduct) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("ProductDetail", { product });
-  }, [navigation]);
+  const handleStepPress = useCallback(
+    (step: TutorialStepType, index: number) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setActiveStepIndex(index);
+      if (step.timestamp && player) {
+        const seconds = parseTimestamp(step.timestamp);
+        player.currentTime = seconds;
+        if (!player.playing) {
+          player.play();
+          setIsPlaying(true);
+        }
+      }
+    },
+    [player],
+  );
+
+  const handleProductPress = useCallback(
+    (product: DetectedProduct) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("ProductDetail", { product });
+    },
+    [navigation],
+  );
 
   const handleClose = useCallback(() => {
     navigation.goBack();
@@ -339,7 +403,7 @@ export default function LookDetailScreen() {
     .onEnd((event) => {
       const velocity = -event.velocityY;
       const currentDepth = depthValue.value;
-      
+
       let targetDepth: number;
       if (velocity > 500) {
         targetDepth = Math.min(DEPTH_EXPANDED, Math.ceil(currentDepth));
@@ -348,7 +412,7 @@ export default function LookDetailScreen() {
       } else {
         targetDepth = Math.round(currentDepth);
       }
-      
+
       runOnJS(updateDepth)(targetDepth);
     });
 
@@ -357,7 +421,7 @@ export default function LookDetailScreen() {
       depthValue.value,
       [DEPTH_FULL, DEPTH_PEEK, DEPTH_EXPANDED],
       [SCREEN_HEIGHT, SCREEN_HEIGHT - PEEK_HEIGHT, PINNED_VIDEO_HEIGHT],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
 
     return { height };
@@ -368,14 +432,14 @@ export default function LookDetailScreen() {
       depthValue.value,
       [DEPTH_FULL, DEPTH_PEEK, DEPTH_EXPANDED],
       [SCREEN_HEIGHT, SCREEN_HEIGHT - PEEK_HEIGHT, PINNED_VIDEO_HEIGHT],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
 
     const opacity = interpolate(
       depthValue.value,
       [DEPTH_FULL, DEPTH_PEEK * 0.5, DEPTH_PEEK],
       [0, 0, 1],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
 
     return {
@@ -385,12 +449,22 @@ export default function LookDetailScreen() {
   });
 
   const fullscreenControlsStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(depthValue.value, [0, 0.3], [1, 0], Extrapolation.CLAMP),
+    opacity: interpolate(
+      depthValue.value,
+      [0, 0.3],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
     pointerEvents: depthValue.value < 0.3 ? "auto" : "none",
   }));
 
   const peekIndicatorStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(depthValue.value, [0, 0.2, 0.5], [1, 1, 0], Extrapolation.CLAMP),
+    opacity: interpolate(
+      depthValue.value,
+      [0, 0.2, 0.5],
+      [1, 1, 0],
+      Extrapolation.CLAMP,
+    ),
   }));
 
   if (isLoading) {
@@ -403,7 +477,10 @@ export default function LookDetailScreen() {
         <View style={styles.gestureContainer}>
           <Animated.View style={[styles.videoContainer, videoContainerStyle]}>
             {videoSource ? (
-              <Pressable onPress={togglePlayPause} style={styles.videoTouchable}>
+              <Pressable
+                onPress={togglePlayPause}
+                style={styles.videoTouchable}
+              >
                 <VideoView
                   player={player}
                   style={styles.video}
@@ -412,18 +489,32 @@ export default function LookDetailScreen() {
                 />
               </Pressable>
             ) : analysis?.thumbnailUrl ? (
-              <Image source={{ uri: analysis.thumbnailUrl }} style={styles.video} />
+              <Image
+                source={{ uri: analysis.thumbnailUrl }}
+                style={styles.video}
+              />
             ) : (
-              <View style={[styles.video, { backgroundColor: theme.backgroundSecondary }]} />
+              <View
+                style={[
+                  styles.video,
+                  { backgroundColor: theme.backgroundSecondary },
+                ]}
+              />
             )}
 
-            <Animated.View style={[styles.fullscreenControls, fullscreenControlsStyle]}>
+            <Animated.View
+              style={[styles.fullscreenControls, fullscreenControlsStyle]}
+            >
               <Pressable
                 onPress={handleClose}
                 style={[styles.closeHandle, { top: insets.top + Spacing.md }]}
                 hitSlop={16}
               >
-                <Feather name="chevron-down" size={28} color="rgba(255,255,255,0.9)" />
+                <Feather
+                  name="chevron-down"
+                  size={28}
+                  color="rgba(255,255,255,0.9)"
+                />
               </Pressable>
 
               <Pressable onPress={togglePlayPause} style={styles.centerPlay}>
@@ -454,7 +545,9 @@ export default function LookDetailScreen() {
             ]}
           >
             <View style={styles.routineHandle}>
-              <View style={[styles.handleBar, { backgroundColor: theme.border }]} />
+              <View
+                style={[styles.handleBar, { backgroundColor: theme.border }]}
+              />
             </View>
 
             <View style={styles.tabRow}>
@@ -465,14 +558,20 @@ export default function LookDetailScreen() {
                 <ThemedText
                   type="body"
                   style={{
-                    color: activeTab === "routine" ? theme.text : theme.textTertiary,
+                    color:
+                      activeTab === "routine" ? theme.text : theme.textTertiary,
                     fontWeight: activeTab === "routine" ? "600" : "400",
                   }}
                 >
                   Routine
                 </ThemedText>
                 {activeTab === "routine" ? (
-                  <View style={[styles.tabIndicator, { backgroundColor: theme.primary }]} />
+                  <View
+                    style={[
+                      styles.tabIndicator,
+                      { backgroundColor: theme.primary },
+                    ]}
+                  />
                 ) : null}
               </Pressable>
               {matchedProductsCount > 0 ? (
@@ -483,17 +582,28 @@ export default function LookDetailScreen() {
                   <ThemedText
                     type="body"
                     style={{
-                      color: activeTab === "products" ? theme.text : theme.textTertiary,
+                      color:
+                        activeTab === "products"
+                          ? theme.text
+                          : theme.textTertiary,
                       fontWeight: activeTab === "products" ? "600" : "400",
                     }}
                   >
                     Products
                   </ThemedText>
-                  <ThemedText type="small" style={{ color: theme.textTertiary, marginLeft: 4 }}>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textTertiary, marginLeft: 4 }}
+                  >
                     {matchedProductsCount}
                   </ThemedText>
                   {activeTab === "products" ? (
-                    <View style={[styles.tabIndicator, { backgroundColor: theme.primary }]} />
+                    <View
+                      style={[
+                        styles.tabIndicator,
+                        { backgroundColor: theme.primary },
+                      ]}
+                    />
                   ) : null}
                 </Pressable>
               ) : null}
@@ -521,13 +631,19 @@ export default function LookDetailScreen() {
                   ))
                 ) : (
                   <View style={styles.emptyState}>
-                    <ThemedText type="body" style={{ color: theme.textTertiary }}>
+                    <ThemedText
+                      type="body"
+                      style={{ color: theme.textTertiary }}
+                    >
                       No steps found
                     </ThemedText>
                   </View>
                 )
               ) : (
-                <ProductsTab products={products} onProductPress={handleProductPress} />
+                <ProductsTab
+                  products={products}
+                  onProductPress={handleProductPress}
+                />
               )}
             </ScrollView>
           </Animated.View>

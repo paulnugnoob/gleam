@@ -1,7 +1,12 @@
 import { db } from "../db";
 import { jobs, creators, posts, type Job } from "../../shared/schema";
 import { eq, sql, and, inArray } from "drizzle-orm";
-import { MockAdapter, upsertCreator, savePosts, type PostSourceAdapter } from "./adapter";
+import {
+  MockAdapter,
+  upsertCreator,
+  savePosts,
+  type PostSourceAdapter,
+} from "./adapter";
 import { classifyUnprocessedPosts } from "./classifier";
 import { computeAllCreatorFeatures } from "./aggregator";
 import { generateRankingSnapshot } from "./scorer";
@@ -19,8 +24,13 @@ export function getAdapter(): PostSourceAdapter {
 async function runFullRefresh(jobId: number): Promise<void> {
   await updateJob(jobId, "running");
   try {
-    const allCreators = await db.select().from(creators).where(eq(creators.isActive, true));
-    console.log(`[RankingJob] Processing ${allCreators.length} creators with adapter: ${activeAdapter.name}`);
+    const allCreators = await db
+      .select()
+      .from(creators)
+      .where(eq(creators.isActive, true));
+    console.log(
+      `[RankingJob] Processing ${allCreators.length} creators with adapter: ${activeAdapter.name}`,
+    );
 
     let totalPosts = 0;
     for (const creator of allCreators) {
@@ -31,7 +41,10 @@ async function runFullRefresh(jobId: number): Promise<void> {
           totalPosts += saved;
         }
       } catch (err) {
-        console.error(`[RankingJob] Error fetching posts for ${creator.handle}:`, err);
+        console.error(
+          `[RankingJob] Error fetching posts for ${creator.handle}:`,
+          err,
+        );
       }
     }
     console.log(`[RankingJob] Fetched ${totalPosts} posts`);
@@ -42,8 +55,13 @@ async function runFullRefresh(jobId: number): Promise<void> {
     const featureCount = await computeAllCreatorFeatures(90);
     console.log(`[RankingJob] Computed features for ${featureCount} creators`);
 
-    const { snapshotId, rankedCount } = await generateRankingSnapshot(90, `Job #${jobId} refresh`);
-    console.log(`[RankingJob] Generated snapshot #${snapshotId} with ${rankedCount} ranked creators`);
+    const { snapshotId, rankedCount } = await generateRankingSnapshot(
+      90,
+      `Job #${jobId} refresh`,
+    );
+    console.log(
+      `[RankingJob] Generated snapshot #${snapshotId} with ${rankedCount} ranked creators`,
+    );
 
     await updateJob(jobId, "completed");
   } catch (error: any) {
@@ -56,9 +74,13 @@ async function runFetchPosts(jobId: number, payload: any): Promise<void> {
   await updateJob(jobId, "running");
   try {
     const creatorIds: number[] = payload?.creatorIds || [];
-    const targetCreators = creatorIds.length > 0
-      ? await db.select().from(creators).where(inArray(creators.id, creatorIds))
-      : await db.select().from(creators).where(eq(creators.isActive, true));
+    const targetCreators =
+      creatorIds.length > 0
+        ? await db
+            .select()
+            .from(creators)
+            .where(inArray(creators.id, creatorIds))
+        : await db.select().from(creators).where(eq(creators.isActive, true));
 
     let totalPosts = 0;
     for (const creator of targetCreators) {
@@ -101,7 +123,9 @@ async function runRanking(jobId: number): Promise<void> {
   await updateJob(jobId, "running");
   try {
     const { snapshotId, rankedCount } = await generateRankingSnapshot(90);
-    console.log(`[RankingJob] Generated snapshot #${snapshotId} with ${rankedCount} ranked`);
+    console.log(
+      `[RankingJob] Generated snapshot #${snapshotId} with ${rankedCount} ranked`,
+    );
     await updateJob(jobId, "completed");
   } catch (error: any) {
     await updateJob(jobId, "failed", error.message);
@@ -111,17 +135,21 @@ async function runRanking(jobId: number): Promise<void> {
 async function updateJob(jobId: number, status: string, error?: string) {
   const update: any = { status };
   if (status === "running") update.startedAt = new Date();
-  if (status === "completed" || status === "failed") update.finishedAt = new Date();
+  if (status === "completed" || status === "failed")
+    update.finishedAt = new Date();
   if (error) update.error = error;
   await db.update(jobs).set(update).where(eq(jobs.id, jobId));
 }
 
 export async function enqueueJob(name: string, payload?: any): Promise<number> {
-  const [job] = await db.insert(jobs).values({
-    name,
-    status: "queued",
-    payload: payload || null,
-  }).returning();
+  const [job] = await db
+    .insert(jobs)
+    .values({
+      name,
+      status: "queued",
+      payload: payload || null,
+    })
+    .returning();
   return job.id;
 }
 
@@ -152,7 +180,11 @@ export async function processNextJob(): Promise<boolean> {
       await runRanking(nextJob.id);
       break;
     default:
-      await updateJob(nextJob.id, "failed", `Unknown job type: ${nextJob.name}`);
+      await updateJob(
+        nextJob.id,
+        "failed",
+        `Unknown job type: ${nextJob.name}`,
+      );
   }
 
   return true;

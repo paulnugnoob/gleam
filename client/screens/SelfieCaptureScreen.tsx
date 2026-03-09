@@ -38,7 +38,9 @@ export default function SelfieCaptureScreen() {
 
   const analyzeSkinToneMutation = useMutation({
     mutationFn: async (imageUri: string) => {
-      const res = await apiRequest("POST", "/api/analyze-skin-tone", { imageUri });
+      const res = await apiRequest("POST", "/api/analyze-skin-tone", {
+        imageUri,
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -50,7 +52,10 @@ export default function SelfieCaptureScreen() {
     },
     onError: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Analysis Failed", "Could not analyze skin tone. Please try again.");
+      Alert.alert(
+        "Analysis Failed",
+        "Could not analyze skin tone. Please try again.",
+      );
     },
   });
 
@@ -93,19 +98,33 @@ export default function SelfieCaptureScreen() {
   }, [navigation]);
 
   if (!permission) {
-    return <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]} />;
+    return (
+      <View
+        style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      />
+    );
   }
 
   if (!permission.granted) {
     if (permission.status === "denied" && !permission.canAskAgain) {
       return (
-        <View style={[styles.container, styles.centered, { backgroundColor: theme.backgroundRoot }]}>
+        <View
+          style={[
+            styles.container,
+            styles.centered,
+            { backgroundColor: theme.backgroundRoot },
+          ]}
+        >
           <Feather name="camera-off" size={64} color={theme.textSecondary} />
           <ThemedText type="h2" style={styles.permissionTitle}>
             Camera Access Required
           </ThemedText>
-          <ThemedText type="body" style={[styles.permissionText, { color: theme.textSecondary }]}>
-            Please enable camera access in Settings to take selfies for skin tone analysis.
+          <ThemedText
+            type="body"
+            style={[styles.permissionText, { color: theme.textSecondary }]}
+          >
+            Please enable camera access in Settings to take selfies for skin
+            tone analysis.
           </ThemedText>
           {Platform.OS !== "web" ? (
             <Button
@@ -121,7 +140,11 @@ export default function SelfieCaptureScreen() {
               Open Settings
             </Button>
           ) : null}
-          <Button variant="secondary" onPress={handleClose} style={styles.permissionButton}>
+          <Button
+            variant="secondary"
+            onPress={handleClose}
+            style={styles.permissionButton}
+          >
             Go Back
           </Button>
         </View>
@@ -129,18 +152,32 @@ export default function SelfieCaptureScreen() {
     }
 
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: theme.backgroundRoot }]}>
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: theme.backgroundRoot },
+        ]}
+      >
         <Feather name="camera" size={64} color={theme.primary} />
         <ThemedText type="h2" style={styles.permissionTitle}>
           Enable Camera
         </ThemedText>
-        <ThemedText type="body" style={[styles.permissionText, { color: theme.textSecondary }]}>
-          We need camera access to take your selfie for accurate skin tone analysis.
+        <ThemedText
+          type="body"
+          style={[styles.permissionText, { color: theme.textSecondary }]}
+        >
+          We need camera access to take your selfie for accurate skin tone
+          analysis.
         </ThemedText>
         <Button onPress={requestPermission} style={styles.permissionButton}>
           Enable Camera
         </Button>
-        <Button variant="secondary" onPress={handleClose} style={styles.permissionButton}>
+        <Button
+          variant="secondary"
+          onPress={handleClose}
+          style={styles.permissionButton}
+        >
           Cancel
         </Button>
       </View>
@@ -149,14 +186,14 @@ export default function SelfieCaptureScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "#000" }]}>
-      <CameraView
-        ref={cameraRef}
-        style={styles.camera}
-        facing="front"
-      >
+      <CameraView ref={cameraRef} style={styles.camera} facing="front">
         <View style={[styles.overlay, { paddingTop: insets.top }]}>
           <View style={styles.header}>
-            <Pressable onPress={handleClose} style={styles.closeButton} testID="button-close-camera">
+            <Pressable
+              onPress={handleClose}
+              style={styles.closeButton}
+              testID="button-close-camera"
+            >
               <Feather name="x" size={24} color="#FFFFFF" />
             </Pressable>
             <ThemedText type="h3" style={styles.headerTitle}>
@@ -172,8 +209,17 @@ export default function SelfieCaptureScreen() {
             </ThemedText>
           </View>
 
-          <View style={[styles.controls, { paddingBottom: insets.bottom + Spacing.xl }]}>
-            <Pressable onPress={handlePickImage} style={styles.galleryButton} testID="button-pick-image">
+          <View
+            style={[
+              styles.controls,
+              { paddingBottom: insets.bottom + Spacing.xl },
+            ]}
+          >
+            <Pressable
+              onPress={handlePickImage}
+              style={styles.galleryButton}
+              testID="button-pick-image"
+            >
               <Feather name="image" size={24} color="#FFFFFF" />
             </Pressable>
 
@@ -191,10 +237,21 @@ export default function SelfieCaptureScreen() {
         </View>
 
         {isAnalyzing ? (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.analyzingOverlay}>
-            <View style={[styles.analyzingCard, { backgroundColor: theme.backgroundDefault }]}>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={styles.analyzingOverlay}
+          >
+            <View
+              style={[
+                styles.analyzingCard,
+                { backgroundColor: theme.backgroundDefault },
+              ]}
+            >
               <ThemedText type="h3">Analyzing...</ThemedText>
-              <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.sm }}>
+              <ThemedText
+                type="body"
+                style={{ color: theme.textSecondary, marginTop: Spacing.sm }}
+              >
                 Detecting your skin tone
               </ThemedText>
             </View>

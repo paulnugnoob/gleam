@@ -1,5 +1,12 @@
 import React, { useCallback } from "react";
-import { View, StyleSheet, FlatList, Image, Pressable, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Image,
+  Pressable,
+  Dimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -38,51 +45,69 @@ export default function MyLooksScreen() {
     queryKey: ["/api/saved-looks"],
   });
 
-  const handleLookPress = useCallback((look: LookWithAnalysis) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("ShoppingList", {
-      look: {
-        id: look.id,
-        title: look.title,
-        videoAnalysisId: look.videoAnalysisId,
-      },
-    });
-  }, [navigation]);
+  const handleLookPress = useCallback(
+    (look: LookWithAnalysis) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("ShoppingList", {
+        look: {
+          id: look.id,
+          title: look.title,
+          videoAnalysisId: look.videoAnalysisId,
+        },
+      });
+    },
+    [navigation],
+  );
 
-  const renderLookCard = useCallback(({ item, index }: { item: LookWithAnalysis; index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
-      <Pressable
-        onPress={() => handleLookPress(item)}
-        style={({ pressed }) => [
-          styles.lookCard,
-          { backgroundColor: theme.backgroundDefault, opacity: pressed ? 0.8 : 1 },
-        ]}
-        testID={`look-card-${item.id}`}
-      >
-        {item.videoAnalysis?.thumbnailUrl ? (
-          <Image
-            source={{ uri: item.videoAnalysis.thumbnailUrl }}
-            style={styles.lookThumbnail}
-          />
-        ) : (
-          <View style={[styles.lookThumbnailPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="image" size={28} color={theme.textSecondary} />
-          </View>
-        )}
-        <View style={styles.lookContent}>
-          <ThemedText type="body" numberOfLines={2} style={styles.lookTitle}>
-            {item.title}
-          </ThemedText>
-          <View style={styles.lookMeta}>
-            <Feather name="shopping-bag" size={12} color={theme.textSecondary} />
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>
-              {item.productCount || 0} products
+  const renderLookCard = useCallback(
+    ({ item, index }: { item: LookWithAnalysis; index: number }) => (
+      <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
+        <Pressable
+          onPress={() => handleLookPress(item)}
+          style={({ pressed }) => [
+            styles.lookCard,
+            {
+              backgroundColor: theme.backgroundDefault,
+              opacity: pressed ? 0.8 : 1,
+            },
+          ]}
+          testID={`look-card-${item.id}`}
+        >
+          {item.videoAnalysis?.thumbnailUrl ? (
+            <Image
+              source={{ uri: item.videoAnalysis.thumbnailUrl }}
+              style={styles.lookThumbnail}
+            />
+          ) : (
+            <View
+              style={[
+                styles.lookThumbnailPlaceholder,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <Feather name="image" size={28} color={theme.textSecondary} />
+            </View>
+          )}
+          <View style={styles.lookContent}>
+            <ThemedText type="body" numberOfLines={2} style={styles.lookTitle}>
+              {item.title}
             </ThemedText>
+            <View style={styles.lookMeta}>
+              <Feather
+                name="shopping-bag"
+                size={12}
+                color={theme.textSecondary}
+              />
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                {item.productCount || 0} products
+              </ThemedText>
+            </View>
           </View>
-        </View>
-      </Pressable>
-    </Animated.View>
-  ), [theme, handleLookPress]);
+        </Pressable>
+      </Animated.View>
+    ),
+    [theme, handleLookPress],
+  );
 
   return (
     <FlatList

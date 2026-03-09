@@ -1,11 +1,5 @@
 import React, { useCallback } from "react";
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  Image,
-  Pressable,
-} from "react-native";
+import { View, StyleSheet, FlatList, Image, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -48,21 +42,27 @@ export default function ShoppingListScreen() {
   const totalPrice = data?.totalPrice || "0.00";
   const videoAnalysis = data?.videoAnalysis;
 
-  const handleProductPress = useCallback((product: DetectedProduct) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("ProductDetail", { product });
-  }, [navigation]);
+  const handleProductPress = useCallback(
+    (product: DetectedProduct) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("ProductDetail", { product });
+    },
+    [navigation],
+  );
 
-  const renderProduct = useCallback(({ item, index }: { item: DetectedProduct; index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
-      <ProductCard
-        product={item}
-        onPress={() => handleProductPress(item)}
-        compact
-        testID={`shopping-product-${item.id}`}
-      />
-    </Animated.View>
-  ), [handleProductPress]);
+  const renderProduct = useCallback(
+    ({ item, index }: { item: DetectedProduct; index: number }) => (
+      <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
+        <ProductCard
+          product={item}
+          onPress={() => handleProductPress(item)}
+          compact
+          testID={`shopping-product-${item.id}`}
+        />
+      </Animated.View>
+    ),
+    [handleProductPress],
+  );
 
   const ListHeader = () => (
     <View style={styles.header}>
@@ -73,7 +73,9 @@ export default function ShoppingListScreen() {
               source={{ uri: videoAnalysis.thumbnailUrl }}
               style={styles.videoThumbnail}
             />
-            <View style={[styles.playButton, { backgroundColor: theme.primary }]}>
+            <View
+              style={[styles.playButton, { backgroundColor: theme.primary }]}
+            >
               <Feather name="play" size={20} color="#FFFFFF" />
             </View>
           </Pressable>

@@ -1,17 +1,25 @@
 import { db } from "../db";
-import { posts, contentSignals, creatorFeatures, creators, type InsertCreatorFeature } from "../../shared/schema";
+import {
+  posts,
+  contentSignals,
+  creatorFeatures,
+  creators,
+  type InsertCreatorFeature,
+} from "../../shared/schema";
 import { eq, gte, and, sql, desc } from "drizzle-orm";
 
 function median(values: number[]): number | null {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
 }
 
 export async function aggregateCreatorFeatures(
   creatorId: number,
-  windowDays: number = 90
+  windowDays: number = 90,
 ): Promise<InsertCreatorFeature | null> {
   const windowStart = new Date();
   windowStart.setDate(windowStart.getDate() - windowDays);
@@ -28,10 +36,7 @@ export async function aggregateCreatorFeatures(
     .from(posts)
     .leftJoin(contentSignals, eq(posts.id, contentSignals.postId))
     .where(
-      and(
-        eq(posts.creatorId, creatorId),
-        gte(posts.postedAt, windowStart)
-      )
+      and(eq(posts.creatorId, creatorId), gte(posts.postedAt, windowStart)),
     )
     .orderBy(desc(posts.postedAt));
 
@@ -70,7 +75,8 @@ export async function aggregateCreatorFeatures(
     makeupRatio: makeupCount / samplePosts,
     postsPerWeek,
     medianViews: median(viewValues),
-    pctPostsOver200kViews: viewValues.length > 0 ? over200k / viewValues.length : null,
+    pctPostsOver200kViews:
+      viewValues.length > 0 ? over200k / viewValues.length : null,
     lastPostAt,
     computedAt: new Date(),
   };
@@ -78,23 +84,33 @@ export async function aggregateCreatorFeatures(
   return feature;
 }
 
-export async function computeAndStoreFeatures(creatorId: number, windowDays: number = 90): Promise<boolean> {
+export async function computeAndStoreFeatures(
+  creatorId: number,
+  windowDays: number = 90,
+): Promise<boolean> {
   const feature = await aggregateCreatorFeatures(creatorId, windowDays);
   if (!feature) return false;
 
-  await db.delete(creatorFeatures).where(
-    and(
-      eq(creatorFeatures.creatorId, creatorId),
-      eq(creatorFeatures.windowDays, windowDays)
-    )
-  );
+  await db
+    .delete(creatorFeatures)
+    .where(
+      and(
+        eq(creatorFeatures.creatorId, creatorId),
+        eq(creatorFeatures.windowDays, windowDays),
+      ),
+    );
 
   await db.insert(creatorFeatures).values(feature);
   return true;
 }
 
-export async function computeAllCreatorFeatures(windowDays: number = 90): Promise<number> {
-  const allCreators = await db.select({ id: creators.id }).from(creators).where(eq(creators.isActive, true));
+export async function computeAllCreatorFeatures(
+  windowDays: number = 90,
+): Promise<number> {
+  const allCreators = await db
+    .select({ id: creators.id })
+    .from(creators)
+    .where(eq(creators.isActive, true));
   let computed = 0;
   for (const c of allCreators) {
     const ok = await computeAndStoreFeatures(c.id, windowDays);

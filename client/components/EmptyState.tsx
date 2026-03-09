@@ -30,7 +30,10 @@ export function EmptyState({
         {title}
       </ThemedText>
       {subtitle ? (
-        <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+        <ThemedText
+          type="body"
+          style={[styles.subtitle, { color: theme.textSecondary }]}
+        >
           {subtitle}
         </ThemedText>
       ) : null}

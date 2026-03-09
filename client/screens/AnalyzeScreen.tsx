@@ -53,8 +53,12 @@ function RecentItem({ item, index, onPress }: RecentItemProps) {
     <Animated.View entering={FadeInDown.delay(index * 100).duration(400)}>
       <AnimatedPressable
         onPress={() => onPress(item)}
-        onPressIn={() => { scale.value = withSpring(0.98); }}
-        onPressOut={() => { scale.value = withSpring(1); }}
+        onPressIn={() => {
+          scale.value = withSpring(0.98);
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1);
+        }}
         style={[
           styles.recentCard,
           { backgroundColor: theme.backgroundDefault },
@@ -65,7 +69,12 @@ function RecentItem({ item, index, onPress }: RecentItemProps) {
         {item.thumbnailUrl ? (
           <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
         ) : (
-          <View style={[styles.thumbnailPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+          <View
+            style={[
+              styles.thumbnailPlaceholder,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
             <Feather name="video" size={24} color={theme.textSecondary} />
           </View>
         )}
@@ -74,7 +83,12 @@ function RecentItem({ item, index, onPress }: RecentItemProps) {
             {item.title || "Untitled Video"}
           </ThemedText>
           <View style={styles.recentMeta}>
-            <View style={[styles.platformBadge, { backgroundColor: theme.primary + "15" }]}>
+            <View
+              style={[
+                styles.platformBadge,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
               <ThemedText type="caption" style={{ color: theme.primary }}>
                 {item.platform || "Video"}
               </ThemedText>
@@ -104,7 +118,10 @@ export default function AnalyzeScreen() {
 
   const handleShareVideo = useCallback(() => {
     if (!videoUrl.trim()) {
-      Alert.alert("Enter a URL", "Please paste a video URL from TikTok, YouTube, or Instagram");
+      Alert.alert(
+        "Enter a URL",
+        "Please paste a video URL from TikTok, YouTube, or Instagram",
+      );
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -112,14 +129,23 @@ export default function AnalyzeScreen() {
     setVideoUrl("");
   }, [videoUrl, navigation]);
 
-  const handleAnalysisPress = useCallback((analysis: VideoAnalysis) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("VideoAnalysis", { videoUrl: analysis.videoUrl, analysisId: analysis.id });
-  }, [navigation]);
+  const handleAnalysisPress = useCallback(
+    (analysis: VideoAnalysis) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("VideoAnalysis", {
+        videoUrl: analysis.videoUrl,
+        analysisId: analysis.id,
+      });
+    },
+    [navigation],
+  );
 
-  const renderRecentItem = useCallback(({ item, index }: { item: VideoAnalysis; index: number }) => (
-    <RecentItem item={item} index={index} onPress={handleAnalysisPress} />
-  ), [handleAnalysisPress]);
+  const renderRecentItem = useCallback(
+    ({ item, index }: { item: VideoAnalysis; index: number }) => (
+      <RecentItem item={item} index={index} onPress={handleAnalysisPress} />
+    ),
+    [handleAnalysisPress],
+  );
 
   const ListHeader = () => (
     <View style={styles.header}>
@@ -128,15 +154,29 @@ export default function AnalyzeScreen() {
           <ThemedText type="display" style={styles.heroTitle}>
             Discover Beauty
           </ThemedText>
-          <ThemedText type="body" style={[styles.heroSubtitle, { color: theme.textSecondary }]}>
-            Paste a video URL to identify products and get your personalized shopping list
+          <ThemedText
+            type="body"
+            style={[styles.heroSubtitle, { color: theme.textSecondary }]}
+          >
+            Paste a video URL to identify products and get your personalized
+            shopping list
           </ThemedText>
         </View>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(100).duration(500)}>
-        <View style={[styles.inputContainer, { backgroundColor: theme.backgroundDefault }]}>
-          <Feather name="link" size={20} color={theme.textTertiary} style={styles.inputIcon} />
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
+          <Feather
+            name="link"
+            size={20}
+            color={theme.textTertiary}
+            style={styles.inputIcon}
+          />
           <TextInput
             value={videoUrl}
             onChangeText={setVideoUrl}

@@ -65,8 +65,12 @@ function LookCard({ item, index, onPress }: LookCardProps) {
     <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
       <AnimatedPressable
         onPress={() => onPress(item)}
-        onPressIn={() => { scale.value = withSpring(0.96); }}
-        onPressOut={() => { scale.value = withSpring(1); }}
+        onPressIn={() => {
+          scale.value = withSpring(0.96);
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1);
+        }}
         style={[
           styles.lookCard,
           { backgroundColor: theme.backgroundDefault },
@@ -80,7 +84,12 @@ function LookCard({ item, index, onPress }: LookCardProps) {
             style={styles.lookThumbnail}
           />
         ) : (
-          <View style={[styles.lookThumbnailPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+          <View
+            style={[
+              styles.lookThumbnailPlaceholder,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
             <Feather name="image" size={28} color={theme.textSecondary} />
           </View>
         )}
@@ -113,16 +122,19 @@ export default function LookbookScreen() {
     queryKey: ["/api/saved-looks"],
   });
 
-  const handleLookPress = useCallback((look: LookWithAnalysis) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (look.videoAnalysisId) {
-      navigation.navigate("LookDetail", {
-        lookId: look.id,
-        analysisId: look.videoAnalysisId,
-        title: look.title,
-      });
-    }
-  }, [navigation]);
+  const handleLookPress = useCallback(
+    (look: LookWithAnalysis) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (look.videoAnalysisId) {
+        navigation.navigate("LookDetail", {
+          lookId: look.id,
+          analysisId: look.videoAnalysisId,
+          title: look.title,
+        });
+      }
+    },
+    [navigation],
+  );
 
   const handleAddLook = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -137,9 +149,12 @@ export default function LookbookScreen() {
     setVideoUrl("");
   }, [videoUrl, navigation]);
 
-  const renderLookCard = useCallback(({ item, index }: { item: LookWithAnalysis; index: number }) => (
-    <LookCard item={item} index={index} onPress={handleLookPress} />
-  ), [handleLookPress]);
+  const renderLookCard = useCallback(
+    ({ item, index }: { item: LookWithAnalysis; index: number }) => (
+      <LookCard item={item} index={index} onPress={handleLookPress} />
+    ),
+    [handleLookPress],
+  );
 
   const ListHeader = () => (
     <View style={styles.header}>
@@ -147,7 +162,10 @@ export default function LookbookScreen() {
         <ThemedText type="display" style={styles.welcomeText}>
           Your Beauty{"\n"}Rituals
         </ThemedText>
-        <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+        <ThemedText
+          type="body"
+          style={[styles.subtitle, { color: theme.textSecondary }]}
+        >
           A collection of looks to recreate and love
         </ThemedText>
       </Animated.View>
@@ -187,7 +205,7 @@ export default function LookbookScreen() {
         entering={FadeIn.delay(400).duration(400)}
         style={[
           styles.floatingButton,
-          { 
+          {
             bottom: tabBarHeight + Spacing.lg,
             backgroundColor: theme.primary,
           },
@@ -218,17 +236,33 @@ export default function LookbookScreen() {
           />
           <Animated.View
             entering={FadeInDown.duration(300)}
-            style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
           >
             <ThemedText type="h2" style={styles.modalTitle}>
               Add a New Look
             </ThemedText>
-            <ThemedText type="body" style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+            <ThemedText
+              type="body"
+              style={[styles.modalSubtitle, { color: theme.textSecondary }]}
+            >
               Paste a link from TikTok, Instagram, or YouTube
             </ThemedText>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.backgroundSecondary }]}>
-              <Feather name="link" size={20} color={theme.textTertiary} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <Feather
+                name="link"
+                size={20}
+                color={theme.textTertiary}
+                style={styles.inputIcon}
+              />
               <TextInput
                 value={videoUrl}
                 onChangeText={setVideoUrl}

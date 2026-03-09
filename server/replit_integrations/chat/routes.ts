@@ -17,6 +17,9 @@ const ai = new GoogleGenAI({
 });
 
 export function registerChatRoutes(app: Express): void {
+  const parseRouteId = (value: string | string[]): number =>
+    parseInt(Array.isArray(value) ? value[0] : value, 10);
+
   // Get all conversations
   app.get("/api/conversations", async (req: Request, res: Response) => {
     try {
@@ -31,7 +34,7 @@ export function registerChatRoutes(app: Express): void {
   // Get single conversation with messages
   app.get("/api/conversations/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseRouteId(req.params.id);
       const conversation = await chatStorage.getConversation(id);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
@@ -48,7 +51,9 @@ export function registerChatRoutes(app: Express): void {
   app.post("/api/conversations", async (req: Request, res: Response) => {
     try {
       const { title } = req.body;
-      const conversation = await chatStorage.createConversation(title || "New Chat");
+      const conversation = await chatStorage.createConversation(
+        title || "New Chat",
+      );
       res.status(201).json(conversation);
     } catch (error) {
       console.error("Error creating conversation:", error);
@@ -59,7 +64,7 @@ export function registerChatRoutes(app: Express): void {
   // Delete conversation
   app.delete("/api/conversations/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseRouteId(req.params.id);
       await chatStorage.deleteConversation(id);
       res.status(204).send();
     } catch (error) {
@@ -69,57 +74,66 @@ export function registerChatRoutes(app: Express): void {
   });
 
   // Send message and get AI response (streaming)
-  app.post("/api/conversations/:id/messages", async (req: Request, res: Response) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const { content } = req.body;
+  app.post(
+    "/api/conversations/:id/messages",
+    async (req: Request, res: Response) => {
+      try {
+        const conversationId = parseRouteId(req.params.id);
+        const { content } = req.body;
 
-      // Save user message
-      await chatStorage.createMessage(conversationId, "user", content);
+        // Save user message
+        await chatStorage.createMessage(conversationId, "user", content);
 
-      // Get conversation history for context
-      const messages = await chatStorage.getMessagesByConversation(conversationId);
-      const chatMessages = messages.map((m) => ({
-        role: m.role as "user" | "model",
-        parts: [{ text: m.content }],
-      }));
+        // Get conversation history for context
+        const messages =
+          await chatStorage.getMessagesByConversation(conversationId);
+        const chatMessages = messages.map((m) => ({
+          role: m.role as "user" | "model",
+          parts: [{ text: m.content }],
+        }));
 
-      // Set up SSE
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
+        // Set up SSE
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
 
-      // Stream response from Gemini
-      const stream = await ai.models.generateContentStream({
-        model: "gemini-2.5-flash",
-        contents: chatMessages,
-      });
+        // Stream response from Gemini
+        const stream = await ai.models.generateContentStream({
+          model: "gemini-2.5-flash",
+          contents: chatMessages,
+        });
 
-      let fullResponse = "";
+        let fullResponse = "";
 
-      for await (const chunk of stream) {
-        const content = chunk.text || "";
-        if (content) {
-          fullResponse += content;
-          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        for await (const chunk of stream) {
+          const content = chunk.text || "";
+          if (content) {
+            fullResponse += content;
+            res.write(`data: ${JSON.stringify({ content })}\n\n`);
+          }
+        }
+
+        // Save assistant message
+        await chatStorage.createMessage(
+          conversationId,
+          "assistant",
+          fullResponse,
+        );
+
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Check if headers already sent (SSE streaming started)
+        if (res.headersSent) {
+          res.write(
+            `data: ${JSON.stringify({ error: "Failed to send message" })}\n\n`,
+          );
+          res.end();
+        } else {
+          res.status(500).json({ error: "Failed to send message" });
         }
       }
-
-      // Save assistant message
-      await chatStorage.createMessage(conversationId, "assistant", fullResponse);
-
-      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-      res.end();
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Check if headers already sent (SSE streaming started)
-      if (res.headersSent) {
-        res.write(`data: ${JSON.stringify({ error: "Failed to send message" })}\n\n`);
-        res.end();
-      } else {
-        res.status(500).json({ error: "Failed to send message" });
-      }
-    }
-  });
+    },
+  );
 }
-

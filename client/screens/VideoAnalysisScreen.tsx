@@ -20,12 +20,20 @@ import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { TutorialStep } from "@/components/TutorialStep";
-import { ProductCardSkeleton, TutorialStepSkeleton, SkeletonLoader } from "@/components/SkeletonLoader";
+import {
+  ProductCardSkeleton,
+  TutorialStepSkeleton,
+  SkeletonLoader,
+} from "@/components/SkeletonLoader";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { apiRequest, getApiUrl } from "@/lib/query-client";
 import type { RootStackParamList } from "@/navigation/RootStackNavigator";
-import type { VideoAnalysis, DetectedProduct, TutorialStep as TutorialStepType } from "@shared/schema";
+import type {
+  VideoAnalysis,
+  DetectedProduct,
+  TutorialStep as TutorialStepType,
+} from "@shared/schema";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type VideoAnalysisRouteProp = RouteProp<RootStackParamList, "VideoAnalysis">;
@@ -48,7 +56,9 @@ export default function VideoAnalysisScreen() {
   const queryClient = useQueryClient();
   const { videoUrl, analysisId } = route.params;
 
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
 
   const existingAnalysisQuery = useQuery<AnalysisResult>({
     queryKey: ["/api/video-analyses", analysisId],
@@ -57,7 +67,9 @@ export default function VideoAnalysisScreen() {
 
   const analyzeMutation = useMutation({
     mutationFn: async (url: string) => {
-      const res = await apiRequest("POST", "/api/analyze-video", { videoUrl: url });
+      const res = await apiRequest("POST", "/api/analyze-video", {
+        videoUrl: url,
+      });
       return res.json() as Promise<AnalysisResult>;
     },
     onSuccess: (data) => {
@@ -66,7 +78,10 @@ export default function VideoAnalysisScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (error) => {
-      Alert.alert("Analysis Failed", "Could not analyze the video. Please try again.");
+      Alert.alert(
+        "Analysis Failed",
+        "Could not analyze the video. Please try again.",
+      );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     },
   });
@@ -83,7 +98,10 @@ export default function VideoAnalysisScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-looks"] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Added to Lookbook", "This look is now in your collection. You can find it on your home screen.");
+      Alert.alert(
+        "Added to Lookbook",
+        "This look is now in your collection. You can find it on your home screen.",
+      );
       navigation.goBack();
     },
   });
@@ -100,18 +118,26 @@ export default function VideoAnalysisScreen() {
     }
   }, [videoUrl, analysisId]);
 
-  const handleProductPress = useCallback((product: DetectedProduct) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("ProductDetail", { product });
-  }, [navigation]);
+  const handleProductPress = useCallback(
+    (product: DetectedProduct) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("ProductDetail", { product });
+    },
+    [navigation],
+  );
 
   const handleSaveLook = useCallback(() => {
     saveLookMutation.mutate();
   }, [saveLookMutation]);
 
-  const isLoading = analyzeMutation.isPending || (!!analysisId && existingAnalysisQuery.isLoading);
+  const isLoading =
+    analyzeMutation.isPending ||
+    (!!analysisId && existingAnalysisQuery.isLoading);
   const products = analysisResult?.products || [];
-  const tutorialSteps = analysisResult?.tutorialSteps || analysisResult?.analysis?.tutorialSteps || [];
+  const tutorialSteps =
+    analysisResult?.tutorialSteps ||
+    analysisResult?.analysis?.tutorialSteps ||
+    [];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -124,13 +150,32 @@ export default function VideoAnalysisScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInDown.delay(0).duration(400)}>
-          <View style={[styles.videoPreview, { backgroundColor: theme.backgroundSecondary }]}>
+          <View
+            style={[
+              styles.videoPreview,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
             <Feather name="play-circle" size={48} color={theme.textSecondary} />
-            <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md, textAlign: "center" }}>
+            <ThemedText
+              type="body"
+              style={{
+                color: theme.textSecondary,
+                marginTop: Spacing.md,
+                textAlign: "center",
+              }}
+            >
               {isLoading ? "Finding your products..." : "Ready to save"}
             </ThemedText>
             {isLoading ? (
-              <ThemedText type="small" style={{ color: theme.textTertiary, marginTop: Spacing.sm, textAlign: "center" }}>
+              <ThemedText
+                type="small"
+                style={{
+                  color: theme.textTertiary,
+                  marginTop: Spacing.sm,
+                  textAlign: "center",
+                }}
+              >
                 This may take a moment
               </ThemedText>
             ) : null}
@@ -140,14 +185,22 @@ export default function VideoAnalysisScreen() {
         {isLoading ? (
           <>
             <View style={styles.loadingSection}>
-              <SkeletonLoader width={180} height={24} style={{ marginBottom: Spacing.lg }} />
+              <SkeletonLoader
+                width={180}
+                height={24}
+                style={{ marginBottom: Spacing.lg }}
+              />
               <View style={styles.productsGrid}>
                 <ProductCardSkeleton />
                 <ProductCardSkeleton />
               </View>
             </View>
             <View style={styles.loadingSection}>
-              <SkeletonLoader width={160} height={24} style={{ marginBottom: Spacing.lg }} />
+              <SkeletonLoader
+                width={160}
+                height={24}
+                style={{ marginBottom: Spacing.lg }}
+              />
               <TutorialStepSkeleton />
               <View style={{ height: Spacing.md }} />
               <TutorialStepSkeleton />
@@ -158,7 +211,12 @@ export default function VideoAnalysisScreen() {
             <Animated.View entering={FadeIn.delay(100).duration(400)}>
               <View style={styles.sectionHeader}>
                 <ThemedText type="h2">Products Found</ThemedText>
-                <View style={[styles.countBadge, { backgroundColor: theme.primary }]}>
+                <View
+                  style={[
+                    styles.countBadge,
+                    { backgroundColor: theme.primary },
+                  ]}
+                >
                   <ThemedText type="caption" style={{ color: "#FFFFFF" }}>
                     {products.length}
                   </ThemedText>
@@ -182,9 +240,24 @@ export default function VideoAnalysisScreen() {
                   ))}
                 </View>
               ) : (
-                <View style={[styles.emptyProducts, { backgroundColor: theme.backgroundSecondary }]}>
-                  <Feather name="package" size={32} color={theme.textSecondary} />
-                  <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+                <View
+                  style={[
+                    styles.emptyProducts,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
+                  <Feather
+                    name="package"
+                    size={32}
+                    color={theme.textSecondary}
+                  />
+                  <ThemedText
+                    type="body"
+                    style={{
+                      color: theme.textSecondary,
+                      marginTop: Spacing.md,
+                    }}
+                  >
                     No products found
                   </ThemedText>
                 </View>
@@ -203,14 +276,28 @@ export default function VideoAnalysisScreen() {
                       key={index}
                       entering={FadeInDown.delay(index * 80).duration(400)}
                     >
-                      <TutorialStep step={step} testID={`tutorial-step-${index}`} />
+                      <TutorialStep
+                        step={step}
+                        testID={`tutorial-step-${index}`}
+                      />
                     </Animated.View>
                   ))}
                 </View>
               ) : (
-                <View style={[styles.emptyProducts, { backgroundColor: theme.backgroundSecondary }]}>
+                <View
+                  style={[
+                    styles.emptyProducts,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <Feather name="list" size={32} color={theme.textSecondary} />
-                  <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+                  <ThemedText
+                    type="body"
+                    style={{
+                      color: theme.textSecondary,
+                      marginTop: Spacing.md,
+                    }}
+                  >
                     No steps found
                   </ThemedText>
                 </View>
@@ -223,15 +310,23 @@ export default function VideoAnalysisScreen() {
       {!isLoading ? (
         <Animated.View
           entering={FadeIn.delay(300).duration(400)}
-          style={[styles.floatingButtons, { bottom: insets.bottom + Spacing.lg }]}
+          style={[
+            styles.floatingButtons,
+            { bottom: insets.bottom + Spacing.lg },
+          ]}
         >
           {analysisResult?.analysis.id ? (
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                navigation.navigate("DebugAnalysis", { analysisId: analysisResult.analysis.id });
+                navigation.navigate("DebugAnalysis", {
+                  analysisId: analysisResult.analysis.id,
+                });
               }}
-              style={[styles.debugButton, { backgroundColor: theme.backgroundSecondary }]}
+              style={[
+                styles.debugButton,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
               testID="button-debug-analysis"
             >
               <Feather name="code" size={20} color={theme.primary} />

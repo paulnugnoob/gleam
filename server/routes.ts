@@ -5,11 +5,11 @@ import * as fs from "node:fs";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { storage } from "./storage";
 import { db } from "./db";
-import { 
-  downloadVideo, 
-  extractFrames, 
-  cleanupTempFiles, 
-  readFileAsBase64, 
+import {
+  downloadVideo,
+  extractFrames,
+  cleanupTempFiles,
+  readFileAsBase64,
   getMimeType,
   getVideoMetadata,
   calculateFrameCount,
@@ -23,7 +23,12 @@ import {
 import { normalizeProduct } from "./productNormalizer";
 import { matchProduct, formatCatalogProduct } from "./productMatcher";
 import { createTimer, type TimingReport } from "./timing";
-import type { TutorialStep, SkinToneData, DebugData, ProductEvidence } from "@shared/schema";
+import type {
+  TutorialStep,
+  SkinToneData,
+  DebugData,
+  ProductEvidence,
+} from "@shared/schema";
 import {
   creators as creatorsTable,
   posts as postsTable,
@@ -60,8 +65,9 @@ async function searchMakeupProducts(query: string): Promise<any[]> {
       const brand = (product.brand || "").toLowerCase();
       const type = (product.product_type || "").toLowerCase();
 
-      return searchTerms.some((term: string) =>
-        name.includes(term) || brand.includes(term) || type.includes(term)
+      return searchTerms.some(
+        (term: string) =>
+          name.includes(term) || brand.includes(term) || type.includes(term),
       );
     });
 
@@ -91,7 +97,7 @@ interface AnalysisResult {
 async function analyzeVideoWithGemini(
   framePaths: string[],
   metadata: VideoMetadata,
-  audioTranscript: string | null = null
+  audioTranscript: string | null = null,
 ): Promise<AnalysisResult> {
   const imageParts = framePaths.map((framePath) => ({
     inlineData: {
@@ -100,11 +106,11 @@ async function analyzeVideoWithGemini(
     },
   }));
 
-  const frameBase64s = imageParts.map((part) => 
-    `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+  const frameBase64s = imageParts.map(
+    (part) => `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
   );
 
-  const transcriptSection = audioTranscript 
+  const transcriptSection = audioTranscript
     ? `\n\nAUDIO TRANSCRIPT (what the creator says in the video):
 ${audioTranscript.slice(0, 3000)}
 
@@ -174,10 +180,7 @@ Be thorough but accurate - include what you can see in frames AND what is mentio
   const contents = [
     {
       role: "user" as const,
-      parts: [
-        { text: prompt },
-        ...imageParts,
-      ],
+      parts: [{ text: prompt }, ...imageParts],
     },
   ];
 
@@ -187,7 +190,7 @@ Be thorough but accurate - include what you can see in frames AND what is mentio
   });
 
   const responseText = response.text || "";
-  
+
   try {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -213,7 +216,9 @@ Be thorough but accurate - include what you can see in frames AND what is mentio
   };
 }
 
-async function transcribeAudioWithGemini(audioPath: string): Promise<string | null> {
+async function transcribeAudioWithGemini(
+  audioPath: string,
+): Promise<string | null> {
   try {
     if (!fs.existsSync(audioPath)) {
       console.log("Audio file not found for transcription");
@@ -229,8 +234,8 @@ async function transcribeAudioWithGemini(audioPath: string): Promise<string | nu
       {
         role: "user" as const,
         parts: [
-          { 
-            text: `Please transcribe the audio in this file. Extract all spoken words, including any product names, brand names, or beauty-related terms mentioned. If there's no speech or the audio is unclear, indicate that. Provide only the transcription text without any additional commentary.` 
+          {
+            text: `Please transcribe the audio in this file. Extract all spoken words, including any product names, brand names, or beauty-related terms mentioned. If there's no speech or the audio is unclear, indicate that. Provide only the transcription text without any additional commentary.`,
           },
           {
             inlineData: {
@@ -282,40 +287,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/video-analyses/:id/debug", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id as string);
-      const analysis = await storage.getVideoAnalysis(id);
-      if (!analysis) {
-        return res.status(404).json({ error: "Analysis not found" });
-      }
-      
-      if (!analysis.debugData) {
-        return res.status(404).json({ error: "No debug data available for this analysis" });
-      }
+  app.get(
+    "/api/video-analyses/:id/debug",
+    async (req: Request, res: Response) => {
+      try {
+        const id = parseInt(req.params.id as string);
+        const analysis = await storage.getVideoAnalysis(id);
+        if (!analysis) {
+          return res.status(404).json({ error: "Analysis not found" });
+        }
 
-      const products = await storage.getDetectedProducts(id);
+        if (!analysis.debugData) {
+          return res
+            .status(404)
+            .json({ error: "No debug data available for this analysis" });
+        }
 
-      res.json({
-        id: analysis.id,
-        videoUrl: analysis.videoUrl,
-        title: analysis.title,
-        status: analysis.status,
-        debugData: analysis.debugData,
-        products: products,
-        createdAt: analysis.createdAt,
-      });
-    } catch (error) {
-      console.error("Error fetching debug data:", error);
-      res.status(500).json({ error: "Failed to fetch debug data" });
-    }
-  });
+        const products = await storage.getDetectedProducts(id);
+
+        res.json({
+          id: analysis.id,
+          videoUrl: analysis.videoUrl,
+          title: analysis.title,
+          status: analysis.status,
+          debugData: analysis.debugData,
+          products: products,
+          createdAt: analysis.createdAt,
+        });
+      } catch (error) {
+        console.error("Error fetching debug data:", error);
+        res.status(500).json({ error: "Failed to fetch debug data" });
+      }
+    },
+  );
 
   app.post("/api/analyze-video", async (req: Request, res: Response) => {
     try {
       const { videoUrl, extractionMode, forceReprocess } = req.body;
-      const mode: ExtractionMode = extractionMode === "fixed_fps" ? "fixed_fps" : "scene_change";
-      const frameConfig = mode === "fixed_fps" ? FIXED_FPS_CONFIG : DEFAULT_FRAME_CONFIG;
+      const mode: ExtractionMode =
+        extractionMode === "fixed_fps" ? "fixed_fps" : "scene_change";
+      const frameConfig =
+        mode === "fixed_fps" ? FIXED_FPS_CONFIG : DEFAULT_FRAME_CONFIG;
 
       if (!videoUrl) {
         return res.status(400).json({ error: "Video URL is required" });
@@ -325,7 +337,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!forceReprocess) {
         const existing = await storage.getVideoAnalysisByUrl(videoUrl);
         if (existing && existing.status === "completed") {
-          console.log(`Fast-match hit: Video already analyzed (id: ${existing.id})`);
+          console.log(
+            `Fast-match hit: Video already analyzed (id: ${existing.id})`,
+          );
           const products = await storage.getDetectedProducts(existing.id);
           return res.json({
             analysis: existing,
@@ -354,7 +368,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Starting video analysis for: ${videoUrl} (mode: ${mode})`);
 
       let downloadResult;
-      let extractResult: ExtractFramesResult = { framePaths: [], duration: 0, frameCount: 0, mode };
+      let extractResult: ExtractFramesResult = {
+        framePaths: [],
+        duration: 0,
+        frameCount: 0,
+        mode,
+      };
 
       try {
         timer.startStage("download_video");
@@ -371,11 +390,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timer.endStage();
 
         timer.startStage("frame_extraction");
-        extractResult = await extractFrames(downloadResult.videoPath, frameConfig);
+        extractResult = await extractFrames(
+          downloadResult.videoPath,
+          frameConfig,
+        );
         timer.endStage();
         timer.setFrameCount(extractResult.frameCount);
         timer.setVideoDuration(extractResult.duration);
-        console.log(`Extracted ${extractResult.framePaths.length} frames from ${extractResult.duration}s video (mode: ${extractResult.mode})`);
+        console.log(
+          `Extracted ${extractResult.framePaths.length} frames from ${extractResult.duration}s video (mode: ${extractResult.mode})`,
+        );
 
         if (extractResult.framePaths.length === 0) {
           throw new Error("Could not extract frames from video");
@@ -391,7 +415,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (downloadResult.audioPath) {
           console.log("Starting audio transcription...");
           timer.startStage("audio_transcription");
-          audioTranscript = await transcribeAudioWithGemini(downloadResult.audioPath);
+          audioTranscript = await transcribeAudioWithGemini(
+            downloadResult.audioPath,
+          );
           timer.endStage();
         }
 
@@ -399,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const analysisData = await analyzeVideoWithGemini(
           extractResult.framePaths,
           downloadResult.metadata,
-          audioTranscript
+          audioTranscript,
         );
         timer.endStage();
 
@@ -427,7 +453,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         timer.startStage("db_update_analysis_complete");
         await storage.updateVideoAnalysis(analysis.id, {
-          title: analysisData.title || downloadResult.metadata.title.slice(0, 50),
+          title:
+            analysisData.title || downloadResult.metadata.title.slice(0, 50),
           status: "completed",
           tutorialSteps: analysisData.steps || [],
           debugData,
@@ -446,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const normalized = normalizeProduct(
               product.name || "",
               product.brand,
-              product.type
+              product.type,
             );
 
             const detectedProduct = await storage.createDetectedProduct({
@@ -476,7 +503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 matchedProductType: match.product_type,
                 matchedProductUrl: catalog.catalogProductUrl,
                 matchedProductDescription: catalog.catalogDescription,
-                matchedProductColors: catalog.catalogColors.map(c => ({
+                matchedProductColors: catalog.catalogColors.map((c) => ({
                   hex_value: c.hex,
                   colour_name: c.name,
                 })),
@@ -485,7 +512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
 
             return detectedProduct;
-          })
+          }),
         );
         timer.endStage();
 
@@ -505,10 +532,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           products: finalProducts,
           tutorialSteps: analysisData.steps || [],
         });
-
       } catch (downloadError: any) {
         console.error("Video processing error:", downloadError);
-        
+
         if (downloadResult) {
           cleanupTempFiles(downloadResult.videoPath);
         }
@@ -597,7 +623,7 @@ Respond in this exact JSON format:
             const normalized = normalizeProduct(
               product.name || "",
               product.brand,
-              product.type
+              product.type,
             );
 
             const detectedProduct = await storage.createDetectedProduct({
@@ -627,7 +653,7 @@ Respond in this exact JSON format:
                 matchedProductType: match.product_type,
                 matchedProductUrl: catalog.catalogProductUrl,
                 matchedProductDescription: catalog.catalogDescription,
-                matchedProductColors: catalog.catalogColors.map(c => ({
+                matchedProductColors: catalog.catalogColors.map((c) => ({
                   hex_value: c.hex,
                   colour_name: c.name,
                 })),
@@ -636,7 +662,7 @@ Respond in this exact JSON format:
             }
 
             return detectedProduct;
-          })
+          }),
         );
 
         const finalProducts = await storage.getDetectedProducts(analysis.id);
@@ -665,32 +691,39 @@ Respond in this exact JSON format:
     }
   });
 
-  app.get("/api/saved-looks/:id/products", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id as string);
-      const look = await storage.getSavedLook(id);
-      if (!look) {
-        return res.status(404).json({ error: "Look not found" });
+  app.get(
+    "/api/saved-looks/:id/products",
+    async (req: Request, res: Response) => {
+      try {
+        const id = parseInt(req.params.id as string);
+        const look = await storage.getSavedLook(id);
+        if (!look) {
+          return res.status(404).json({ error: "Look not found" });
+        }
+
+        const videoAnalysis = await storage.getVideoAnalysis(
+          look.videoAnalysisId,
+        );
+        const products = await storage.getDetectedProducts(
+          look.videoAnalysisId,
+        );
+
+        const totalPrice = products.reduce((sum, p) => {
+          const price = parseFloat(p.matchedProductPrice || "0");
+          return sum + price;
+        }, 0);
+
+        res.json({
+          videoAnalysis,
+          products,
+          totalPrice: totalPrice.toFixed(2),
+        });
+      } catch (error) {
+        console.error("Error fetching look products:", error);
+        res.status(500).json({ error: "Failed to fetch look products" });
       }
-
-      const videoAnalysis = await storage.getVideoAnalysis(look.videoAnalysisId);
-      const products = await storage.getDetectedProducts(look.videoAnalysisId);
-
-      const totalPrice = products.reduce((sum, p) => {
-        const price = parseFloat(p.matchedProductPrice || "0");
-        return sum + price;
-      }, 0);
-
-      res.json({
-        videoAnalysis,
-        products,
-        totalPrice: totalPrice.toFixed(2),
-      });
-    } catch (error) {
-      console.error("Error fetching look products:", error);
-      res.status(500).json({ error: "Failed to fetch look products" });
-    }
-  });
+    },
+  );
 
   app.post("/api/saved-looks", async (req: Request, res: Response) => {
     try {
@@ -811,7 +844,7 @@ Respond in this exact JSON format:
   app.get("/api/admin/analyses", async (req: Request, res: Response) => {
     try {
       const analyses = await storage.getVideoAnalysesWithProductCounts();
-      const result = analyses.map(a => ({
+      const result = analyses.map((a) => ({
         id: a.id,
         videoUrl: a.videoUrl,
         platform: a.platform,
@@ -821,7 +854,8 @@ Respond in this exact JSON format:
         stepCount: a.tutorialSteps?.length || 0,
         productCount: a.productCount,
         matchedProductCount: a.matchedProductCount,
-        processingTimeMs: (a.debugData as any)?.timingReport?.totalDurationMs || null,
+        processingTimeMs:
+          (a.debugData as any)?.timingReport?.totalDurationMs || null,
         extractionMode: (a.debugData as any)?.extractionMode || null,
         frameCount: (a.debugData as any)?.frameCount || 0,
         createdAt: a.createdAt,
@@ -834,60 +868,66 @@ Respond in this exact JSON format:
     }
   });
 
-  app.get("/api/admin/analyses/:id/detail", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id as string);
-      const analysis = await storage.getVideoAnalysis(id);
-      if (!analysis) {
-        return res.status(404).json({ error: "Analysis not found" });
+  app.get(
+    "/api/admin/analyses/:id/detail",
+    async (req: Request, res: Response) => {
+      try {
+        const id = parseInt(req.params.id as string);
+        const analysis = await storage.getVideoAnalysis(id);
+        if (!analysis) {
+          return res.status(404).json({ error: "Analysis not found" });
+        }
+        const products = await storage.getDetectedProducts(id);
+
+        const debugData = analysis.debugData as DebugData | null;
+
+        res.json({
+          id: analysis.id,
+          videoUrl: analysis.videoUrl,
+          platform: analysis.platform,
+          thumbnailUrl: analysis.thumbnailUrl,
+          title: analysis.title,
+          status: analysis.status,
+          tutorialSteps: analysis.tutorialSteps || [],
+          createdAt: analysis.createdAt,
+          updatedAt: analysis.updatedAt,
+          metadata: debugData?.metadata || null,
+          audioTranscript: debugData?.audioTranscript || null,
+          aiPrompt: debugData?.aiPrompt || null,
+          aiResponse: debugData?.aiResponse || null,
+          timingReport: debugData?.timingReport || null,
+          extractionMode: debugData?.extractionMode || null,
+          frameCount: debugData?.frameCount || 0,
+          frames: debugData?.frames || [],
+          products: products.map((p) => ({
+            id: p.id,
+            aiDetectedName: p.aiDetectedName,
+            aiDetectedBrand: p.aiDetectedBrand,
+            aiDetectedType: p.aiDetectedType,
+            aiDetectedColor: p.aiDetectedColor,
+            aiConfidence: p.aiConfidence,
+            aiEvidence: p.aiEvidence,
+            matchedProductName: p.matchedProductName,
+            matchedProductBrand: p.matchedProductBrand,
+            matchedProductImage: p.matchedProductImage,
+            matchedProductPrice: p.matchedProductPrice,
+            matchedProductType: p.matchedProductType,
+            matchedProductUrl: p.matchedProductUrl,
+            matchScore: p.matchScore,
+          })),
+        });
+      } catch (error) {
+        console.error("Error fetching admin analysis detail:", error);
+        res.status(500).json({ error: "Failed to fetch analysis detail" });
       }
-      const products = await storage.getDetectedProducts(id);
-      
-      const debugData = analysis.debugData as DebugData | null;
-      
-      res.json({
-        id: analysis.id,
-        videoUrl: analysis.videoUrl,
-        platform: analysis.platform,
-        thumbnailUrl: analysis.thumbnailUrl,
-        title: analysis.title,
-        status: analysis.status,
-        tutorialSteps: analysis.tutorialSteps || [],
-        createdAt: analysis.createdAt,
-        updatedAt: analysis.updatedAt,
-        metadata: debugData?.metadata || null,
-        audioTranscript: debugData?.audioTranscript || null,
-        aiPrompt: debugData?.aiPrompt || null,
-        aiResponse: debugData?.aiResponse || null,
-        timingReport: debugData?.timingReport || null,
-        extractionMode: debugData?.extractionMode || null,
-        frameCount: debugData?.frameCount || 0,
-        frames: debugData?.frames || [],
-        products: products.map(p => ({
-          id: p.id,
-          aiDetectedName: p.aiDetectedName,
-          aiDetectedBrand: p.aiDetectedBrand,
-          aiDetectedType: p.aiDetectedType,
-          aiDetectedColor: p.aiDetectedColor,
-          aiConfidence: p.aiConfidence,
-          aiEvidence: p.aiEvidence,
-          matchedProductName: p.matchedProductName,
-          matchedProductBrand: p.matchedProductBrand,
-          matchedProductImage: p.matchedProductImage,
-          matchedProductPrice: p.matchedProductPrice,
-          matchedProductType: p.matchedProductType,
-          matchedProductUrl: p.matchedProductUrl,
-          matchScore: p.matchScore,
-        })),
-      });
-    } catch (error) {
-      console.error("Error fetching admin analysis detail:", error);
-      res.status(500).json({ error: "Failed to fetch analysis detail" });
-    }
-  });
+    },
+  );
 
   // Bulk queue: accepts array of URLs and processes them in background
-  const processingQueue: Map<string, { status: string; analysisId?: number; error?: string }> = new Map();
+  const processingQueue: Map<
+    string,
+    { status: string; analysisId?: number; error?: string }
+  > = new Map();
 
   app.post("/api/admin/bulk-queue", async (req: Request, res: Response) => {
     try {
@@ -900,18 +940,32 @@ Respond in this exact JSON format:
         .map((u: string) => u.trim())
         .filter((u: string) => u.length > 0);
 
-      const results: { url: string; status: string; analysisId?: number }[] = [];
+      const results: { url: string; status: string; analysisId?: number }[] =
+        [];
 
       for (const url of validUrls) {
         // Check if already processed
         const existing = await storage.getVideoAnalysisByUrl(url);
         if (existing && existing.status === "completed") {
-          results.push({ url, status: "already_completed", analysisId: existing.id });
+          results.push({
+            url,
+            status: "already_completed",
+            analysisId: existing.id,
+          });
           continue;
         }
 
-        if (existing && ["downloading", "extracting_frames", "analyzing"].includes(existing.status)) {
-          results.push({ url, status: "already_processing", analysisId: existing.id });
+        if (
+          existing &&
+          ["downloading", "extracting_frames", "analyzing"].includes(
+            existing.status,
+          )
+        ) {
+          results.push({
+            url,
+            status: "already_processing",
+            analysisId: existing.id,
+          });
           continue;
         }
 
@@ -920,7 +974,7 @@ Respond in this exact JSON format:
         results.push({ url, status: "queued" });
 
         // Process in background (don't await)
-        processVideoInBackground(url).catch(err => {
+        processVideoInBackground(url).catch((err) => {
           console.error(`Background processing failed for ${url}:`, err);
           processingQueue.set(url, { status: "failed", error: err.message });
         });
@@ -962,17 +1016,28 @@ Respond in this exact JSON format:
       status: "downloading",
     });
     timer.setAnalysisId(analysis.id);
-    processingQueue.set(videoUrl, { status: "downloading", analysisId: analysis.id });
+    processingQueue.set(videoUrl, {
+      status: "downloading",
+      analysisId: analysis.id,
+    });
 
     let downloadResult;
-    let extractResult: ExtractFramesResult = { framePaths: [], duration: 0, frameCount: 0, mode };
+    let extractResult: ExtractFramesResult = {
+      framePaths: [],
+      duration: 0,
+      frameCount: 0,
+      mode,
+    };
 
     try {
       timer.startStage("download_video");
       downloadResult = await downloadVideo(videoUrl);
       timer.endStage();
 
-      processingQueue.set(videoUrl, { status: "extracting_frames", analysisId: analysis.id });
+      processingQueue.set(videoUrl, {
+        status: "extracting_frames",
+        analysisId: analysis.id,
+      });
       await storage.updateVideoAnalysis(analysis.id, {
         title: downloadResult.metadata.title.slice(0, 100),
         thumbnailUrl: downloadResult.metadata.thumbnailUrl,
@@ -980,7 +1045,10 @@ Respond in this exact JSON format:
       });
 
       timer.startStage("frame_extraction");
-      extractResult = await extractFrames(downloadResult.videoPath, frameConfig);
+      extractResult = await extractFrames(
+        downloadResult.videoPath,
+        frameConfig,
+      );
       timer.endStage();
       timer.setFrameCount(extractResult.frameCount);
       timer.setVideoDuration(extractResult.duration);
@@ -989,13 +1057,18 @@ Respond in this exact JSON format:
         throw new Error("Could not extract frames from video");
       }
 
-      processingQueue.set(videoUrl, { status: "analyzing", analysisId: analysis.id });
+      processingQueue.set(videoUrl, {
+        status: "analyzing",
+        analysisId: analysis.id,
+      });
       await storage.updateVideoAnalysis(analysis.id, { status: "analyzing" });
 
       let audioTranscript: string | null = null;
       if (downloadResult.audioPath) {
         timer.startStage("audio_transcription");
-        audioTranscript = await transcribeAudioWithGemini(downloadResult.audioPath);
+        audioTranscript = await transcribeAudioWithGemini(
+          downloadResult.audioPath,
+        );
         timer.endStage();
       }
 
@@ -1003,7 +1076,7 @@ Respond in this exact JSON format:
       const analysisData = await analyzeVideoWithGemini(
         extractResult.framePaths,
         downloadResult.metadata,
-        audioTranscript
+        audioTranscript,
       );
       timer.endStage();
 
@@ -1031,8 +1104,16 @@ Respond in this exact JSON format:
       timer.startStage("product_normalization_and_matching");
       await Promise.all(
         (analysisData.products || []).map(async (product: any) => {
-          const evidence: ProductEvidence = product.evidence || { visual: null, audio: null, metadata: null };
-          const normalized = normalizeProduct(product.name || "", product.brand, product.type);
+          const evidence: ProductEvidence = product.evidence || {
+            visual: null,
+            audio: null,
+            metadata: null,
+          };
+          const normalized = normalizeProduct(
+            product.name || "",
+            product.brand,
+            product.type,
+          );
 
           const detectedProduct = await storage.createDetectedProduct({
             videoAnalysisId: analysis.id,
@@ -1060,18 +1141,21 @@ Respond in this exact JSON format:
               matchedProductType: match.product_type,
               matchedProductUrl: catalog.catalogProductUrl,
               matchedProductDescription: catalog.catalogDescription,
-              matchedProductColors: catalog.catalogColors.map(c => ({
+              matchedProductColors: catalog.catalogColors.map((c) => ({
                 hex_value: c.hex,
                 colour_name: c.name,
               })),
               matchScore: score,
             });
           }
-        })
+        }),
       );
       timer.endStage();
 
-      processingQueue.set(videoUrl, { status: "completed", analysisId: analysis.id });
+      processingQueue.set(videoUrl, {
+        status: "completed",
+        analysisId: analysis.id,
+      });
       timer.logReport();
 
       if (downloadResult) {
@@ -1079,23 +1163,31 @@ Respond in this exact JSON format:
       }
     } catch (error: any) {
       console.error(`Background processing error for ${videoUrl}:`, error);
-      
+
       if (downloadResult) {
         cleanupTempFiles(downloadResult.videoPath);
       }
 
       await storage.updateVideoAnalysis(analysis.id, { status: "failed" });
-      processingQueue.set(videoUrl, { status: "failed", analysisId: analysis.id, error: error.message });
+      processingQueue.set(videoUrl, {
+        status: "failed",
+        analysisId: analysis.id,
+        error: error.message,
+      });
     }
   }
 
   // Discovery endpoint - uses YouTube Data API to find top beauty tutorial videos
   app.post("/api/admin/discover", async (req: Request, res: Response) => {
     try {
-      const { query = "get ready with me makeup tutorial", sortBy = "viewCount", maxResults = 20 } = req.body;
+      const {
+        query = "get ready with me makeup tutorial",
+        sortBy = "viewCount",
+        maxResults = 20,
+      } = req.body;
 
       const youtubeApiKey = process.env.YOUTUBE_API_KEY;
-      
+
       if (!youtubeApiKey) {
         // Fallback: use Gemini to suggest top beauty tutorial videos
         const suggestPrompt = `You are a beauty content expert. List ${maxResults} real, popular "${query}" videos from YouTube, TikTok, or Instagram.
@@ -1135,17 +1227,29 @@ Respond in this exact JSON format:
           const jsonMatch = responseText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
-            return res.json({ videos: parsed.videos || [], source: "ai_suggested" });
+            return res.json({
+              videos: parsed.videos || [],
+              source: "ai_suggested",
+            });
           }
         } catch (parseError) {
           console.error("Error parsing discovery response:", parseError);
         }
 
-        return res.json({ videos: [], source: "ai_suggested", error: "Could not generate suggestions" });
+        return res.json({
+          videos: [],
+          source: "ai_suggested",
+          error: "Could not generate suggestions",
+        });
       }
 
       // Use YouTube Data API
-      const order = sortBy === "viewCount" ? "viewCount" : sortBy === "recent" ? "date" : "relevance";
+      const order =
+        sortBy === "viewCount"
+          ? "viewCount"
+          : sortBy === "recent"
+            ? "date"
+            : "relevance";
       const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&order=${order}&maxResults=${Math.min(maxResults, 50)}&videoDuration=medium&key=${youtubeApiKey}`;
 
       const searchResponse = await fetch(searchUrl);
@@ -1154,7 +1258,8 @@ Respond in this exact JSON format:
       }
 
       const searchData = await searchResponse.json();
-      const videoIds = searchData.items?.map((item: any) => item.id.videoId).join(",") || "";
+      const videoIds =
+        searchData.items?.map((item: any) => item.id.videoId).join(",") || "";
 
       if (!videoIds) {
         return res.json({ videos: [], source: "youtube_api" });
@@ -1171,7 +1276,10 @@ Respond in this exact JSON format:
         viewCount: parseInt(item.statistics.viewCount || "0"),
         channelName: item.snippet.channelTitle,
         platform: "youtube",
-        thumbnailUrl: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+        thumbnailUrl:
+          item.snippet.thumbnails?.medium?.url ||
+          item.snippet.thumbnails?.default?.url ||
+          "",
       }));
 
       // Sort by view count if requested
@@ -1187,46 +1295,57 @@ Respond in this exact JSON format:
   });
 
   // Queue discovered videos for processing
-  app.post("/api/admin/queue-discovered", async (req: Request, res: Response) => {
-    try {
-      const { videos } = req.body;
-      if (!Array.isArray(videos) || videos.length === 0) {
-        return res.status(400).json({ error: "Videos array is required" });
-      }
-
-      const urls = videos.map((v: any) => v.url).filter((u: string) => u);
-      
-      // Reuse bulk-queue logic
-      const results: { url: string; status: string; analysisId?: number }[] = [];
-
-      for (const url of urls) {
-        const existing = await storage.getVideoAnalysisByUrl(url);
-        if (existing && existing.status === "completed") {
-          results.push({ url, status: "already_completed", analysisId: existing.id });
-          continue;
+  app.post(
+    "/api/admin/queue-discovered",
+    async (req: Request, res: Response) => {
+      try {
+        const { videos } = req.body;
+        if (!Array.isArray(videos) || videos.length === 0) {
+          return res.status(400).json({ error: "Videos array is required" });
         }
 
-        processingQueue.set(url, { status: "queued" });
-        results.push({ url, status: "queued" });
+        const urls = videos.map((v: any) => v.url).filter((u: string) => u);
 
-        processVideoInBackground(url).catch(err => {
-          console.error(`Background processing failed for ${url}:`, err);
-          processingQueue.set(url, { status: "failed", error: err.message });
-        });
+        // Reuse bulk-queue logic
+        const results: { url: string; status: string; analysisId?: number }[] =
+          [];
+
+        for (const url of urls) {
+          const existing = await storage.getVideoAnalysisByUrl(url);
+          if (existing && existing.status === "completed") {
+            results.push({
+              url,
+              status: "already_completed",
+              analysisId: existing.id,
+            });
+            continue;
+          }
+
+          processingQueue.set(url, { status: "queued" });
+          results.push({ url, status: "queued" });
+
+          processVideoInBackground(url).catch((err) => {
+            console.error(`Background processing failed for ${url}:`, err);
+            processingQueue.set(url, { status: "failed", error: err.message });
+          });
+        }
+
+        res.json({ queued: results.length, results });
+      } catch (error) {
+        console.error("Error queuing discovered videos:", error);
+        res.status(500).json({ error: "Failed to queue discovered videos" });
       }
-
-      res.json({ queued: results.length, results });
-    } catch (error) {
-      console.error("Error queuing discovered videos:", error);
-      res.status(500).json({ error: "Failed to queue discovered videos" });
-    }
-  });
+    },
+  );
 
   // ========== CREATOR RANKING API ROUTES ==========
 
   app.get("/api/admin/creators", async (req: Request, res: Response) => {
     try {
-      const allCreators = await db.select().from(creatorsTable).orderBy(creatorsTable.handle);
+      const allCreators = await db
+        .select()
+        .from(creatorsTable)
+        .orderBy(creatorsTable.handle);
       res.json(allCreators);
     } catch (error) {
       console.error("Error fetching creators:", error);
@@ -1238,8 +1357,18 @@ Respond in this exact JSON format:
     try {
       const { handle, displayName, platform, profileUrl, avatarUrl } = req.body;
       if (!handle) return res.status(400).json({ error: "Handle is required" });
-      const id = await upsertCreator({ handle, displayName, platform, profileUrl, avatarUrl, source: "manual" });
-      const [creator] = await db.select().from(creatorsTable).where(eq(creatorsTable.id, id));
+      const id = await upsertCreator({
+        handle,
+        displayName,
+        platform,
+        profileUrl,
+        avatarUrl,
+        source: "manual",
+      });
+      const [creator] = await db
+        .select()
+        .from(creatorsTable)
+        .where(eq(creatorsTable.id, id));
       res.json(creator);
     } catch (error) {
       console.error("Error creating creator:", error);
@@ -1247,61 +1376,88 @@ Respond in this exact JSON format:
     }
   });
 
-  app.post("/api/admin/creators/import-csv", async (req: Request, res: Response) => {
-    try {
-      const { creators: csvCreators } = req.body;
-      if (!Array.isArray(csvCreators) || csvCreators.length === 0) {
-        return res.status(400).json({ error: "creators array is required" });
-      }
-
-      const results: { handle: string; id: number; status: string }[] = [];
-      const csvAdapter = new CSVPostsAdapter();
-
-      for (const row of csvCreators) {
-        try {
-          const id = await upsertCreator({
-            handle: row.handle,
-            displayName: row.displayName,
-            platform: row.platform || "tiktok",
-            profileUrl: row.profileUrl,
-            avatarUrl: row.avatarUrl,
-            source: "csv",
-          });
-
-          if (row.posts && Array.isArray(row.posts) && row.posts.length > 0) {
-            csvAdapter.loadFromRows(row.posts, row.handle);
-            const rawPosts = await csvAdapter.fetchPosts(row.handle);
-            await savePosts(id, rawPosts);
-          }
-
-          results.push({ handle: row.handle, id, status: "imported" });
-        } catch (err: any) {
-          results.push({ handle: row.handle, id: 0, status: `error: ${err.message}` });
+  app.post(
+    "/api/admin/creators/import-csv",
+    async (req: Request, res: Response) => {
+      try {
+        const { creators: csvCreators } = req.body;
+        if (!Array.isArray(csvCreators) || csvCreators.length === 0) {
+          return res.status(400).json({ error: "creators array is required" });
         }
-      }
 
-      res.json({ imported: results.filter(r => r.status === "imported").length, total: results.length, results });
-    } catch (error) {
-      console.error("Error importing creators:", error);
-      res.status(500).json({ error: "Failed to import creators" });
-    }
-  });
+        const results: { handle: string; id: number; status: string }[] = [];
+        const csvAdapter = new CSVPostsAdapter();
+
+        for (const row of csvCreators) {
+          try {
+            const id = await upsertCreator({
+              handle: row.handle,
+              displayName: row.displayName,
+              platform: row.platform || "tiktok",
+              profileUrl: row.profileUrl,
+              avatarUrl: row.avatarUrl,
+              source: "csv",
+            });
+
+            if (row.posts && Array.isArray(row.posts) && row.posts.length > 0) {
+              csvAdapter.loadFromRows(row.posts, row.handle);
+              const rawPosts = await csvAdapter.fetchPosts(row.handle);
+              await savePosts(id, rawPosts);
+            }
+
+            results.push({ handle: row.handle, id, status: "imported" });
+          } catch (err: any) {
+            results.push({
+              handle: row.handle,
+              id: 0,
+              status: `error: ${err.message}`,
+            });
+          }
+        }
+
+        res.json({
+          imported: results.filter((r) => r.status === "imported").length,
+          total: results.length,
+          results,
+        });
+      } catch (error) {
+        console.error("Error importing creators:", error);
+        res.status(500).json({ error: "Failed to import creators" });
+      }
+    },
+  );
 
   app.get("/api/admin/creators/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      const [creator] = await db.select().from(creatorsTable).where(eq(creatorsTable.id, id));
+      const id = parseInt(
+        Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+        10,
+      );
+      const [creator] = await db
+        .select()
+        .from(creatorsTable)
+        .where(eq(creatorsTable.id, id));
       if (!creator) return res.status(404).json({ error: "Creator not found" });
 
-      const creatorPosts = await db.select().from(postsTable).where(eq(postsTable.creatorId, id)).orderBy(postsTable.postedAt);
-      const features = await db.select().from(creatorFeaturesTable).where(eq(creatorFeaturesTable.creatorId, id));
+      const creatorPosts = await db
+        .select()
+        .from(postsTable)
+        .where(eq(postsTable.creatorId, id))
+        .orderBy(postsTable.postedAt);
+      const features = await db
+        .select()
+        .from(creatorFeaturesTable)
+        .where(eq(creatorFeaturesTable.creatorId, id));
       const entries = await db
         .select({
           entry: rankingEntriesTable,
           snapshot: rankingSnapshotsTable,
         })
         .from(rankingEntriesTable)
-        .innerJoin(rankingSnapshotsTable, eq(rankingEntriesTable.snapshotId, rankingSnapshotsTable.id))
+        .innerJoin(
+          rankingSnapshotsTable,
+          eq(rankingEntriesTable.snapshotId, rankingSnapshotsTable.id),
+        )
         .where(eq(rankingEntriesTable.creatorId, id))
         .orderBy(rankingSnapshotsTable.snapshotDate);
 
@@ -1309,7 +1465,7 @@ Respond in this exact JSON format:
         creator,
         posts: creatorPosts,
         features: features[0] || null,
-        rankingHistory: entries.map(e => ({
+        rankingHistory: entries.map((e) => ({
           rank: e.entry.rank,
           score: e.entry.score,
           breakdown: e.entry.scoreBreakdown,
@@ -1341,13 +1497,16 @@ Respond in this exact JSON format:
           creator: creatorsTable,
         })
         .from(rankingEntriesTable)
-        .innerJoin(creatorsTable, eq(rankingEntriesTable.creatorId, creatorsTable.id))
+        .innerJoin(
+          creatorsTable,
+          eq(rankingEntriesTable.creatorId, creatorsTable.id),
+        )
         .where(eq(rankingEntriesTable.snapshotId, latestSnapshot.id))
         .orderBy(rankingEntriesTable.rank);
 
       res.json({
         snapshot: latestSnapshot,
-        entries: entries.map(e => ({
+        entries: entries.map((e) => ({
           rank: e.entry.rank,
           score: e.entry.score,
           breakdown: e.entry.scoreBreakdown,
@@ -1367,28 +1526,45 @@ Respond in this exact JSON format:
     }
   });
 
-  app.get("/api/admin/ranking/snapshots", async (req: Request, res: Response) => {
-    try {
-      const snapshots = await db.select().from(rankingSnapshotsTable).orderBy(rankingSnapshotsTable.createdAt);
-      res.json(snapshots);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch snapshots" });
-    }
-  });
+  app.get(
+    "/api/admin/ranking/snapshots",
+    async (req: Request, res: Response) => {
+      try {
+        const snapshots = await db
+          .select()
+          .from(rankingSnapshotsTable)
+          .orderBy(rankingSnapshotsTable.createdAt);
+        res.json(snapshots);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch snapshots" });
+      }
+    },
+  );
 
-  app.post("/api/admin/ranking/refresh", async (req: Request, res: Response) => {
-    try {
-      const jobId = await enqueueJob("full_refresh");
-      res.json({ jobId, status: "queued", message: "Full refresh job queued" });
-    } catch (error) {
-      console.error("Error starting refresh:", error);
-      res.status(500).json({ error: "Failed to start refresh" });
-    }
-  });
+  app.post(
+    "/api/admin/ranking/refresh",
+    async (req: Request, res: Response) => {
+      try {
+        const jobId = await enqueueJob("full_refresh");
+        res.json({
+          jobId,
+          status: "queued",
+          message: "Full refresh job queued",
+        });
+      } catch (error) {
+        console.error("Error starting refresh:", error);
+        res.status(500).json({ error: "Failed to start refresh" });
+      }
+    },
+  );
 
   app.get("/api/admin/jobs", async (req: Request, res: Response) => {
     try {
-      const allJobs = await db.select().from(jobsTable).orderBy(desc(jobsTable.createdAt)).limit(50);
+      const allJobs = await db
+        .select()
+        .from(jobsTable)
+        .orderBy(desc(jobsTable.createdAt))
+        .limit(50);
       res.json(allJobs);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch jobs" });
@@ -1411,22 +1587,30 @@ Respond in this exact JSON format:
       const snapshotAId = req.query.a ? Number(req.query.a) : undefined;
       const snapshotBId = req.query.b ? Number(req.query.b) : undefined;
 
-      const allSnapshots = await db.select().from(rankingSnapshotsTable).orderBy(desc(rankingSnapshotsTable.createdAt));
+      const allSnapshots = await db
+        .select()
+        .from(rankingSnapshotsTable)
+        .orderBy(desc(rankingSnapshotsTable.createdAt));
       if (allSnapshots.length === 0) {
         return res.json({ snapshots: [], diff: null });
       }
 
       const snapshotB = snapshotBId
-        ? allSnapshots.find(s => s.id === snapshotBId) || allSnapshots[0]
+        ? allSnapshots.find((s) => s.id === snapshotBId) || allSnapshots[0]
         : allSnapshots[0];
       const snapshotA = snapshotAId
-        ? allSnapshots.find(s => s.id === snapshotAId) || allSnapshots[1] || null
+        ? allSnapshots.find((s) => s.id === snapshotAId) ||
+          allSnapshots[1] ||
+          null
         : allSnapshots[1] || null;
 
       const entriesB = await db
         .select({ entry: rankingEntriesTable, creator: creatorsTable })
         .from(rankingEntriesTable)
-        .innerJoin(creatorsTable, eq(rankingEntriesTable.creatorId, creatorsTable.id))
+        .innerJoin(
+          creatorsTable,
+          eq(rankingEntriesTable.creatorId, creatorsTable.id),
+        )
         .where(eq(rankingEntriesTable.snapshotId, snapshotB.id))
         .orderBy(rankingEntriesTable.rank);
 
@@ -1435,7 +1619,10 @@ Respond in this exact JSON format:
         entriesA = await db
           .select({ entry: rankingEntriesTable, creator: creatorsTable })
           .from(rankingEntriesTable)
-          .innerJoin(creatorsTable, eq(rankingEntriesTable.creatorId, creatorsTable.id))
+          .innerJoin(
+            creatorsTable,
+            eq(rankingEntriesTable.creatorId, creatorsTable.id),
+          )
           .where(eq(rankingEntriesTable.snapshotId, snapshotA.id))
           .orderBy(rankingEntriesTable.rank);
       }
@@ -1445,7 +1632,10 @@ Respond in this exact JSON format:
         .from(humanLabelsTable)
         .where(eq(humanLabelsTable.snapshotId, snapshotB.id));
 
-      const labelMap: Record<number, { label: string; note: string | null; id: number }> = {};
+      const labelMap: Record<
+        number,
+        { label: string; note: string | null; id: number }
+      > = {};
       for (const l of labelsB) {
         labelMap[l.creatorId] = { label: l.label, note: l.note, id: l.id };
       }
@@ -1455,9 +1645,10 @@ Respond in this exact JSON format:
         rankMapA[e.creator.id] = e.entry.rank;
       }
 
-      const diffEntries = entriesB.map(e => {
+      const diffEntries = entriesB.map((e) => {
         const prevRank = rankMapA[e.creator.id];
-        const rankDelta = prevRank !== undefined ? prevRank - e.entry.rank : null;
+        const rankDelta =
+          prevRank !== undefined ? prevRank - e.entry.rank : null;
         const humanLabel = labelMap[e.creator.id] || null;
         return {
           rank: e.entry.rank,
@@ -1476,8 +1667,8 @@ Respond in this exact JSON format:
       });
 
       const labeled = labelsB.length;
-      const correct = labelsB.filter(l => l.label === "correct").length;
-      const wrong = labelsB.filter(l => l.label === "wrong").length;
+      const correct = labelsB.filter((l) => l.label === "correct").length;
+      const wrong = labelsB.filter((l) => l.label === "wrong").length;
       const precision = labeled > 0 ? correct / labeled : null;
 
       res.json({
@@ -1503,13 +1694,20 @@ Respond in this exact JSON format:
     try {
       const { snapshotId, creatorId, label, note } = req.body;
       if (!snapshotId || !creatorId || !label) {
-        return res.status(400).json({ error: "snapshotId, creatorId, and label are required" });
+        return res
+          .status(400)
+          .json({ error: "snapshotId, creatorId, and label are required" });
       }
 
       const existing = await db
         .select()
         .from(humanLabelsTable)
-        .where(and(eq(humanLabelsTable.snapshotId, snapshotId), eq(humanLabelsTable.creatorId, creatorId)));
+        .where(
+          and(
+            eq(humanLabelsTable.snapshotId, snapshotId),
+            eq(humanLabelsTable.creatorId, creatorId),
+          ),
+        );
 
       if (existing.length > 0) {
         await db
@@ -1532,7 +1730,9 @@ Respond in this exact JSON format:
 
   app.delete("/api/admin/labels/:id", async (req: Request, res: Response) => {
     try {
-      await db.delete(humanLabelsTable).where(eq(humanLabelsTable.id, Number(req.params.id)));
+      await db
+        .delete(humanLabelsTable)
+        .where(eq(humanLabelsTable.id, Number(req.params.id)));
       res.json({ deleted: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete label" });
