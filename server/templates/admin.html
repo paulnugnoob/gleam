@@ -136,6 +136,17 @@
     }
     .toolbar input[type="text"]:focus, .toolbar select:focus { border-color: var(--accent); }
     .toolbar input[type="text"] { width: 260px; }
+    .toolbar-spacer { flex: 1; }
+    .queue-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .stat-card .subvalue {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
 
     /* ── Table ── */
     .table-wrap {
@@ -737,8 +748,8 @@
         <div class="stats-row">
           <div class="stat-card"><div class="label">Total Videos</div><div class="value" id="statTotal">--</div></div>
           <div class="stat-card"><div class="label">Completed</div><div class="value" id="statCompleted">--</div></div>
-          <div class="stat-card"><div class="label">Failed</div><div class="value" id="statFailed">--</div></div>
-          <div class="stat-card"><div class="label">Products Detected</div><div class="value accent" id="statProducts">--</div></div>
+          <div class="stat-card"><div class="label">Needs Review</div><div class="value" id="statNeedsReview">--</div><div class="subvalue" id="statFeedbackSummary">--</div></div>
+          <div class="stat-card"><div class="label">Products Detected</div><div class="value accent" id="statProducts">--</div><div class="subvalue" id="statCandidateSummary">--</div></div>
         </div>
 
         <!-- Bulk Actions -->
@@ -767,6 +778,15 @@
             <option value="completed">Completed</option>
             <option value="failed">Failed</option>
           </select>
+          <select id="reviewFilter" onchange="filterTable()">
+            <option value="">All Review States</option>
+            <option value="needs_review">Needs Review</option>
+            <option value="has_feedback">Has Feedback</option>
+            <option value="has_candidates">Has Candidate Matches</option>
+            <option value="clean">Clean / No Queue Flags</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <div class="queue-hint" id="queueHint">Queue view shows all analyses.</div>
         </div>
 
         <div class="table-wrap">
@@ -779,13 +799,14 @@
                 <th data-sort="status" onclick="sortTable('status')">Status <span class="sort-icon">&#9650;</span></th>
                 <th data-sort="steps" onclick="sortTable('steps')">Steps <span class="sort-icon">&#9650;</span></th>
                 <th data-sort="products" onclick="sortTable('products')">Products <span class="sort-icon">&#9650;</span></th>
+                <th data-sort="feedback" onclick="sortTable('feedback')">Review <span class="sort-icon">&#9650;</span></th>
                 <th data-sort="processingTime" onclick="sortTable('processingTime')">Time <span class="sort-icon">&#9650;</span></th>
                 <th data-sort="createdAt" onclick="sortTable('createdAt')">Created <span class="sort-icon">&#9650;</span></th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody">
-              <tr><td colspan="9"><div class="loading-spinner"><div class="spinner-ring"></div> Loading analyses...</div></td></tr>
+              <tr><td colspan="10"><div class="loading-spinner"><div class="spinner-ring"></div> Loading analyses...</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -1164,28 +1185,53 @@
       } catch (e) {
         console.error(e);
         toast('Failed to load analyses', 'error');
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>Failed to load data. Check server connection.</p></div></td></tr>';
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="empty-state"><p>Failed to load data. Check server connection.</p></div></td></tr>';
       }
     }
 
     function updateStats() {
       document.getElementById('statTotal').textContent = analyses.length;
       document.getElementById('statCompleted').textContent = analyses.filter(a => a.status === 'completed').length;
-      document.getElementById('statFailed').textContent = analyses.filter(a => a.status === 'failed').length;
+      document.getElementById('statNeedsReview').textContent = analyses.filter(a => a.needsReview).length;
       const totalProducts = analyses.reduce((sum, a) => sum + (a.productCount || 0), 0);
+      const totalCandidates = analyses.reduce((sum, a) => sum + (a.candidateCount || 0), 0);
+      const unresolvedFeedback = analyses.reduce((sum, a) => sum + (a.unresolvedFeedbackCount || 0), 0);
       document.getElementById('statProducts').textContent = totalProducts;
+      document.getElementById('statFeedbackSummary').textContent = unresolvedFeedback + ' unresolved feedback item' + (unresolvedFeedback === 1 ? '' : 's');
+      document.getElementById('statCandidateSummary').textContent = totalCandidates + ' candidate match' + (totalCandidates === 1 ? '' : 'es');
     }
 
     /* ── Table ── */
     function filterTable() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const status = document.getElementById('statusFilter').value;
+      const review = document.getElementById('reviewFilter').value;
       filteredAnalyses = analyses.filter(a => {
         if (status && a.status !== status) return false;
         if (search && !(a.title || '').toLowerCase().includes(search)) return false;
+        if (review === 'needs_review' && !a.needsReview) return false;
+        if (review === 'has_feedback' && !a.hasFeedback) return false;
+        if (review === 'has_candidates' && !a.hasCandidates) return false;
+        if (review === 'clean' && a.needsReview) return false;
         return true;
       });
+      updateQueueHint(review, filteredAnalyses.length);
       sortAndRender();
+    }
+
+    function updateQueueHint(review, count) {
+      const el = document.getElementById('queueHint');
+      if (!review) {
+        el.textContent = 'Queue view shows all analyses.';
+        return;
+      }
+      const labels = {
+        needs_review: 'Needs Review',
+        has_feedback: 'Has Feedback',
+        has_candidates: 'Has Candidate Matches',
+        clean: 'Clean / No Queue Flags',
+      };
+      el.textContent = 'Showing ' + count + ' analysis' + (count === 1 ? '' : 'es') + ' for ' + (labels[review] || review) + '.';
     }
 
     function sortTable(key) {
@@ -1211,6 +1257,7 @@
         if (key === 'createdAt') { av = new Date(av || 0).getTime(); bv = new Date(bv || 0).getTime(); }
         if (key === 'steps') { av = a.stepCount || 0; bv = b.stepCount || 0; }
         if (key === 'products') { av = a.productCount || 0; bv = b.productCount || 0; }
+        if (key === 'feedback') { av = (a.feedbackCount || 0) + (a.candidateCount || 0); bv = (b.feedbackCount || 0) + (b.candidateCount || 0); }
         if (key === 'processingTime') { av = a.processingTimeMs || 0; bv = b.processingTimeMs || 0; }
         if (av == null) av = '';
         if (bv == null) bv = '';
@@ -1223,7 +1270,7 @@
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       if (filteredAnalyses.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No analyses found.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><p>No analyses found.</p></div></td></tr>';
         return;
       }
       tbody.innerHTML = filteredAnalyses.map(a => {
@@ -1235,6 +1282,12 @@
         const matchedCount = a.matchedProductCount || 0;
         const totalProducts = a.productCount || 0;
         const productsDisplay = totalProducts > 0 ? matchedCount + '/' + totalProducts : '0';
+        const reviewBits = [];
+        if (a.needsReview) reviewBits.push('<span class="badge badge-analyzing">needs review</span>');
+        if (a.candidateCount) reviewBits.push('<span class="badge badge-pending">' + a.candidateCount + ' candidate</span>');
+        if (a.unresolvedFeedbackCount) reviewBits.push('<span class="badge badge-failed">' + a.unresolvedFeedbackCount + ' open feedback</span>');
+        else if (a.feedbackCount) reviewBits.push('<span class="badge badge-completed">' + a.feedbackCount + ' feedback resolved</span>');
+        if (a.needsReviewCount) reviewBits.push('<span class="badge badge-queued">' + a.needsReviewCount + ' flagged product</span>');
         return `<tr onclick="openDrawer(${a.id})">
           <td>${thumbHtml}</td>
           <td>${escapeHtml(truncate(a.title, 40))}</td>
@@ -1242,6 +1295,7 @@
           <td><span class="badge badge-${statusClass}">${escapeHtml(statusClass.replace(/_/g,' '))}</span></td>
           <td>${a.stepCount || 0}</td>
           <td>${productsDisplay}</td>
+          <td>${reviewBits.join(' ') || '<span style="color:#9ca3af;">None</span>'}</td>
           <td>${formatDuration(a.processingTimeMs)}</td>
           <td>${timeAgo(a.createdAt)}</td>
           <td onclick="event.stopPropagation()">
@@ -1323,6 +1377,40 @@
       }
     }
 
+    async function updateFeedbackStatus(id, status) {
+      try {
+        const res = await fetch('/api/admin/feedback/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) throw new Error('Failed to update feedback');
+        toast('Feedback updated', 'success');
+        if (currentDetailData?.id) await loadDetail(currentDetailData.id);
+        await loadAnalyses();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to update feedback', 'error');
+      }
+    }
+
+    async function reviewProduct(productId, reviewStatus) {
+      try {
+        const res = await fetch('/api/admin/products/' + productId + '/review', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reviewStatus }),
+        });
+        if (!res.ok) throw new Error('Failed to review product');
+        toast('Product review saved', 'success');
+        if (currentDetailData?.id) await loadDetail(currentDetailData.id);
+        await loadAnalyses();
+      } catch (e) {
+        console.error(e);
+        toast('Failed to review product', 'error');
+      }
+    }
+
     function renderDetail(data) {
       const analysis = data.analysis || data;
       const debug = analysis.debugData || data.debugData || {};
@@ -1350,7 +1438,21 @@
           <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="badge badge-${(analysis.status || 'pending').replace(/\s/g,'_')}">${escapeHtml((analysis.status || 'pending').replace(/_/g,' '))}</span></div></div>
           <div class="meta-item"><div class="meta-label">Created</div><div class="meta-value">${analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : '--'}</div></div>
           <div class="meta-item"><div class="meta-label">Processing Time</div><div class="meta-value">${formatDuration(debug.processingTimeMs)}</div></div>
-        </div>`;
+        </div>
+        ${(data.feedback && data.feedback.length > 0) ? `
+          <div style="margin-top:16px;">
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);font-weight:600;margin-bottom:8px;">User Feedback</div>
+            ${data.feedback.map(f => `
+              <div style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff;">
+                <div style="font-weight:600;margin-bottom:4px;">${escapeHtml((f.feedbackType || 'feedback').replace(/_/g, ' '))}</div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">${f.note ? escapeHtml(f.note) : 'No note provided'} · ${timeAgo(f.createdAt)} · ${escapeHtml(f.status || 'new')}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="btn btn-secondary btn-sm" onclick="updateFeedbackStatus(${f.id}, 'reviewed')">Mark Reviewed</button>
+                  <button class="btn btn-secondary btn-sm" onclick="updateFeedbackStatus(${f.id}, 'resolved')">Resolve</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>` : ''}`;
 
       // Transcript
       document.getElementById('transcriptContent').innerHTML = transcript
@@ -1367,17 +1469,24 @@
         document.getElementById('productsContent').innerHTML = '<div class="product-grid">' + products.map(p => {
           const conf = parseFloat(p.aiConfidence) || 0;
           const matchScore = p.matchScore ? p.matchScore.overall : null;
+          const reviewStatus = p.reviewStatus || 'unreviewed';
           return `<div class="product-card">
             <h4>${escapeHtml(p.aiDetectedName)}</h4>
             <div class="detail">Brand: ${escapeHtml(p.aiDetectedBrand || 'Unknown')}</div>
             <div class="detail">Type: ${escapeHtml(p.aiDetectedType || '--')}</div>
             <div class="detail">Color: ${escapeHtml(p.aiDetectedColor || '--')}</div>
             <div class="detail">Confidence: ${(conf * 100).toFixed(0)}% <span class="confidence-bar"><span class="confidence-bar-fill" style="width:${conf * 100}%"></span></span></div>
+            <div class="detail">Review: ${escapeHtml(reviewStatus.replace(/_/g, ' '))}</div>
             ${p.matchedProductName ? `<div class="match-info">
               <div class="detail" style="font-weight:600;color:var(--text);">Matched: ${escapeHtml(p.matchedProductName)}</div>
               <div class="detail">Brand: ${escapeHtml(p.matchedProductBrand || '--')}</div>
               ${matchScore != null ? `<div class="detail">Match Score: ${(matchScore * 100).toFixed(0)}%</div>` : ''}
             </div>` : '<div class="match-info"><div class="detail" style="color:#9ca3af;">No catalog match</div></div>'}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+              <button class="btn btn-secondary btn-sm" onclick="reviewProduct(${p.id}, 'approved')">Approve</button>
+              <button class="btn btn-secondary btn-sm" onclick="reviewProduct(${p.id}, 'rejected')">Reject</button>
+              <button class="btn btn-secondary btn-sm" onclick="reviewProduct(${p.id}, 'needs_review')">Needs Review</button>
+            </div>
           </div>`;
         }).join('') + '</div>';
       } else {

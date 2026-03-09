@@ -9,11 +9,14 @@ import {
   type InsertSavedLook,
   type UserProfile,
   type InsertUserProfile,
+  type UserFeedback,
+  type InsertUserFeedback,
   users,
   videoAnalyses,
   detectedProducts,
   savedLooks,
   userProfiles,
+  userFeedback,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, count } from "drizzle-orm";
@@ -53,6 +56,10 @@ export interface IStorage {
 
   getUserProfile(): Promise<UserProfile | undefined>;
   createOrUpdateUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+
+  getFeedbackForAnalysis(videoAnalysisId: number): Promise<UserFeedback[]>;
+  getRecentFeedback(): Promise<UserFeedback[]>;
+  createUserFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -242,6 +249,25 @@ export class DatabaseStorage implements IStorage {
       return updated;
     }
     const [created] = await db.insert(userProfiles).values(profile).returning();
+    return created;
+  }
+
+  async getFeedbackForAnalysis(videoAnalysisId: number): Promise<UserFeedback[]> {
+    return db
+      .select()
+      .from(userFeedback)
+      .where(eq(userFeedback.videoAnalysisId, videoAnalysisId))
+      .orderBy(desc(userFeedback.createdAt));
+  }
+
+  async getRecentFeedback(): Promise<UserFeedback[]> {
+    return db.select().from(userFeedback).orderBy(desc(userFeedback.createdAt));
+  }
+
+  async createUserFeedback(
+    feedback: InsertUserFeedback,
+  ): Promise<UserFeedback> {
+    const [created] = await db.insert(userFeedback).values(feedback).returning();
     return created;
   }
 }

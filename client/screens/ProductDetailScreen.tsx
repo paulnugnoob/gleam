@@ -17,6 +17,7 @@ import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
+import { apiRequest } from "@/lib/query-client";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import type { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -47,6 +48,40 @@ export default function ProductDetailScreen() {
   const handleNavigateToSelfie = useCallback(() => {
     navigation.navigate("SelfieCapture");
   }, [navigation]);
+
+  const submitFeedback = useCallback(
+    async (feedbackType: string) => {
+      await apiRequest("POST", "/api/feedback", {
+        videoAnalysisId: product.videoAnalysisId,
+        detectedProductId: product.id,
+        feedbackType,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Thanks", "Your feedback has been recorded.");
+    },
+    [product.id, product.videoAnalysisId],
+  );
+
+  const handleReportIssue = useCallback(() => {
+    Alert.alert("Report Issue", "What is wrong with this result?", [
+      {
+        text: "Wrong Product",
+        onPress: () => {
+          void submitFeedback("wrong_product");
+        },
+      },
+      {
+        text: "Wrong Shade",
+        onPress: () => {
+          void submitFeedback("wrong_shade");
+        },
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  }, [submitFeedback]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -225,9 +260,25 @@ export default function ProductDetailScreen() {
           },
         ]}
       >
-        <Button onPress={handleAddToList} testID="button-add-to-list">
-          Add to Shopping List
-        </Button>
+        <View style={styles.bottomActions}>
+          <Pressable
+            onPress={handleReportIssue}
+            style={[
+              styles.reportButton,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
+            <Feather name="flag" size={16} color={theme.textSecondary} />
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+              Report Issue
+            </ThemedText>
+          </Pressable>
+          <View style={{ flex: 1 }}>
+            <Button onPress={handleAddToList} testID="button-add-to-list">
+              Add to Shopping List
+            </Button>
+          </View>
+        </View>
       </Animated.View>
     </View>
   );
@@ -318,5 +369,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  bottomActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  reportButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
   },
 });

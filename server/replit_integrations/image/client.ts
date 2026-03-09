@@ -1,17 +1,10 @@
-import { GoogleGenAI, Modality } from "@google/genai";
+import { Modality } from "@google/genai";
+import { gemini as ai } from "../../gemini";
 
-// This is using Replit's AI Integrations service, which provides Gemini-compatible API access without requiring your own Gemini API key.
-export const ai = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
-  },
-});
+export { ai };
 
 /**
  * Generate an image and return as base64 data URL.
- * Uses gemini-2.5-flash-image model via Replit AI Integrations.
  */
 export async function generateImage(prompt: string): Promise<string> {
   const response = await ai.models.generateContent({

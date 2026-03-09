@@ -126,6 +126,8 @@ export const detectedProducts = pgTable("detected_products", {
   matchedProductDescription: text("matched_product_description"),
   matchedProductColors: jsonb("matched_product_colors").$type<ProductColor[]>(),
   matchScore: jsonb("match_score").$type<MatchScore>(),
+  reviewStatus: text("review_status").default("unreviewed"),
+  adminNote: text("admin_note"),
   recommendedShade: text("recommended_shade"),
   timestamp: text("timestamp"),
   createdAt: timestamp("created_at")
@@ -246,6 +248,70 @@ export interface MatchScore {
   typeMatch: number;
   nameMatch: number;
 }
+
+export type ProductConfidenceBucket = "exact" | "candidate" | "hidden";
+
+export interface PresentedProduct extends DetectedProduct {
+  confidenceBucket: ProductConfidenceBucket;
+  confidenceScore: number;
+  confidenceLabel: string;
+}
+
+export interface ConfidenceSummary {
+  exactCount: number;
+  candidateCount: number;
+  hiddenCount: number;
+}
+
+export interface ConsumerAnalysisResponse {
+  analysis: VideoAnalysis | undefined;
+  products: PresentedProduct[];
+  productsExact: PresentedProduct[];
+  productsCandidates: PresentedProduct[];
+  tutorialSteps: TutorialStep[];
+  confidenceSummary: ConfidenceSummary;
+  warning?: string;
+}
+
+export const userFeedback = pgTable("user_feedback", {
+  id: serial("id").primaryKey(),
+  videoAnalysisId: integer("video_analysis_id")
+    .notNull()
+    .references(() => videoAnalyses.id, { onDelete: "cascade" }),
+  detectedProductId: integer("detected_product_id").references(
+    () => detectedProducts.id,
+    { onDelete: "set null" },
+  ),
+  feedbackType: text("feedback_type").notNull(),
+  note: text("note"),
+  status: text("status").notNull().default("new"),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+export const userFeedbackRelations = relations(userFeedback, ({ one }) => ({
+  videoAnalysis: one(videoAnalyses, {
+    fields: [userFeedback.videoAnalysisId],
+    references: [videoAnalyses.id],
+  }),
+  detectedProduct: one(detectedProducts, {
+    fields: [userFeedback.detectedProductId],
+    references: [detectedProducts.id],
+  }),
+}));
+
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type UserFeedback = typeof userFeedback.$inferSelect;
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
 
 // ========== CREATOR RANKING TABLES ==========
 

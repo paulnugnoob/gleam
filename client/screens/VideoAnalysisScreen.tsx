@@ -30,8 +30,8 @@ import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { apiRequest, getApiUrl } from "@/lib/query-client";
 import type { RootStackParamList } from "@/navigation/RootStackNavigator";
 import type {
-  VideoAnalysis,
   DetectedProduct,
+  ConsumerAnalysisResponse,
   TutorialStep as TutorialStepType,
 } from "@shared/schema";
 
@@ -40,12 +40,6 @@ type VideoAnalysisRouteProp = RouteProp<RootStackParamList, "VideoAnalysis">;
 
 const { width } = Dimensions.get("window");
 const PRODUCT_CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
-
-interface AnalysisResult {
-  analysis: VideoAnalysis;
-  products: DetectedProduct[];
-  tutorialSteps: TutorialStepType[];
-}
 
 export default function VideoAnalysisScreen() {
   const insets = useSafeAreaInsets();
@@ -56,11 +50,12 @@ export default function VideoAnalysisScreen() {
   const queryClient = useQueryClient();
   const { videoUrl, analysisId } = route.params;
 
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+  const [analysisResult, setAnalysisResult] =
+    useState<ConsumerAnalysisResponse | null>(
     null,
   );
 
-  const existingAnalysisQuery = useQuery<AnalysisResult>({
+  const existingAnalysisQuery = useQuery<ConsumerAnalysisResponse>({
     queryKey: ["/api/video-analyses", analysisId],
     enabled: !!analysisId,
   });
@@ -70,7 +65,7 @@ export default function VideoAnalysisScreen() {
       const res = await apiRequest("POST", "/api/analyze-video", {
         videoUrl: url,
       });
-      return res.json() as Promise<AnalysisResult>;
+      return res.json() as Promise<ConsumerAnalysisResponse>;
     },
     onSuccess: (data) => {
       setAnalysisResult(data);
@@ -88,7 +83,7 @@ export default function VideoAnalysisScreen() {
 
   const saveLookMutation = useMutation({
     mutationFn: async () => {
-      if (!analysisResult?.analysis.id) return;
+      if (!analysisResult?.analysis?.id) return;
       const res = await apiRequest("POST", "/api/saved-looks", {
         videoAnalysisId: analysisResult.analysis.id,
         title: analysisResult.analysis.title || "My Look",
@@ -130,10 +125,22 @@ export default function VideoAnalysisScreen() {
     saveLookMutation.mutate();
   }, [saveLookMutation]);
 
+  const handleMissingProduct = useCallback(async () => {
+    if (!analysisResult?.analysis?.id) return;
+    await apiRequest("POST", "/api/feedback", {
+      videoAnalysisId: analysisResult.analysis.id,
+      feedbackType: "missing_product",
+    });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert("Thanks", "We will review this analysis.");
+  }, [analysisResult?.analysis?.id]);
+
   const isLoading =
     analyzeMutation.isPending ||
     (!!analysisId && existingAnalysisQuery.isLoading);
   const products = analysisResult?.products || [];
+  const productsExact = analysisResult?.productsExact || [];
+  const productsCandidates = analysisResult?.productsCandidates || [];
   const tutorialSteps =
     analysisResult?.tutorialSteps ||
     analysisResult?.analysis?.tutorialSteps ||
@@ -223,23 +230,91 @@ export default function VideoAnalysisScreen() {
                 </View>
               </View>
 
-              {products.length > 0 ? (
-                <View style={styles.productsGrid}>
-                  {products.map((product, index) => (
-                    <Animated.View
-                      key={product.id}
-                      entering={FadeInDown.delay(index * 100).duration(400)}
-                      style={{ width: PRODUCT_CARD_WIDTH }}
-                    >
-                      <ProductCard
-                        product={product}
-                        onPress={() => handleProductPress(product)}
-                        testID={`product-card-${product.id}`}
-                      />
-                    </Animated.View>
-                  ))}
+              {analysisResult?.confidenceSummary ? (
+                <View
+                  style={[
+                    styles.confidenceBanner,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                    {analysisResult.confidenceSummary.exactCount} exact
+                    {" · "}
+                    {analysisResult.confidenceSummary.candidateCount} possible
+                  </ThemedText>
                 </View>
-              ) : (
+              ) : null}
+
+              {products.length > 0 ? (
+                <Pressable
+                  onPress={() => {
+                    void handleMissingProduct();
+                  }}
+                  style={styles.feedbackLink}
+                >
+                  <Feather name="plus-circle" size={14} color={theme.textSecondary} />
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                    Missing a product?
+                  </ThemedText>
+                </Pressable>
+              ) : null}
+
+              {productsExact.length > 0 ? (
+                <>
+                  <ThemedText type="h3" style={styles.subsectionTitle}>
+                    Exact Matches
+                  </ThemedText>
+                  <View style={styles.productsGrid}>
+                    {productsExact.map((product, index) => (
+                      <Animated.View
+                        key={product.id}
+                        entering={FadeInDown.delay(index * 100).duration(400)}
+                        style={{ width: PRODUCT_CARD_WIDTH }}
+                      >
+                        <ProductCard
+                          product={product}
+                          onPress={() => handleProductPress(product)}
+                          testID={`product-card-${product.id}`}
+                        />
+                      </Animated.View>
+                    ))}
+                  </View>
+                </>
+              ) : null}
+
+              {productsCandidates.length > 0 ? (
+                <>
+                  <ThemedText
+                    type="h3"
+                    style={[styles.subsectionTitle, { color: theme.textSecondary }]}
+                  >
+                    Possible Matches
+                  </ThemedText>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textSecondary, marginBottom: Spacing.md }}
+                  >
+                    These are plausible matches, but we are less certain.
+                  </ThemedText>
+                  <View style={styles.productsGrid}>
+                    {productsCandidates.map((product, index) => (
+                      <Animated.View
+                        key={product.id}
+                        entering={FadeInDown.delay(index * 100).duration(400)}
+                        style={{ width: PRODUCT_CARD_WIDTH }}
+                      >
+                        <ProductCard
+                          product={product}
+                          onPress={() => handleProductPress(product as DetectedProduct)}
+                          testID={`product-candidate-card-${product.id}`}
+                        />
+                      </Animated.View>
+                    ))}
+                  </View>
+                </>
+              ) : null}
+
+              {products.length === 0 ? (
                 <View
                   style={[
                     styles.emptyProducts,
@@ -261,7 +336,7 @@ export default function VideoAnalysisScreen() {
                     No products found
                   </ThemedText>
                 </View>
-              )}
+              ) : null}
             </Animated.View>
 
             <Animated.View entering={FadeIn.delay(200).duration(400)}>
@@ -315,12 +390,12 @@ export default function VideoAnalysisScreen() {
             { bottom: insets.bottom + Spacing.lg },
           ]}
         >
-          {analysisResult?.analysis.id ? (
+          {analysisResult?.analysis?.id ? (
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 navigation.navigate("DebugAnalysis", {
-                  analysisId: analysisResult.analysis.id,
+                  analysisId: analysisResult.analysis!.id,
                 });
               }}
               style={[
@@ -375,6 +450,20 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     minWidth: 24,
     alignItems: "center",
+  },
+  confidenceBanner: {
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  subsectionTitle: {
+    marginBottom: Spacing.md,
+  },
+  feedbackLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    marginBottom: Spacing.lg,
   },
   productsGrid: {
     flexDirection: "row",
