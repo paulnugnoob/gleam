@@ -42,6 +42,8 @@ interface AnalysisResult {
 export interface AnalyzeVideoOptions {
   videoUrl: string;
   extractionMode?: ExtractionMode;
+  maxFramesOverride?: number;
+  skipAudioTranscription?: boolean;
   onStatusChange?: (
     status: string,
     context: { analysisId: number; error?: string },
@@ -208,12 +210,15 @@ async function persistDetectedProducts(
 
       const catalog = formatCatalogProduct(match);
       await storage.updateDetectedProduct(detectedProduct.id, {
-        matchedProductId: match.id,
+        matchedProductId:
+          match.source === "makeup_api" && Number.isInteger(Number(match.sourceId))
+            ? Number(match.sourceId)
+            : null,
         matchedProductName: catalog.catalogName,
         matchedProductBrand: catalog.catalogBrand,
         matchedProductImage: catalog.catalogImageUrl,
         matchedProductPrice: catalog.catalogPrice?.toString() || null,
-        matchedProductType: match.product_type,
+        matchedProductType: match.productType,
         matchedProductUrl: catalog.catalogProductUrl,
         matchedProductDescription: catalog.catalogDescription,
         matchedProductColors: catalog.catalogColors.map((c) => ({
@@ -411,12 +416,20 @@ Respond in this exact JSON format:
 export async function analyzeVideo({
   videoUrl,
   extractionMode = "scene_change",
+  maxFramesOverride,
+  skipAudioTranscription = false,
   onStatusChange,
 }: AnalyzeVideoOptions): Promise<AnalyzeVideoResponse> {
   const mode: ExtractionMode =
     extractionMode === "fixed_fps" ? "fixed_fps" : "scene_change";
-  const frameConfig =
+  const baseFrameConfig =
     mode === "fixed_fps" ? FIXED_FPS_CONFIG : DEFAULT_FRAME_CONFIG;
+  const frameConfig = maxFramesOverride
+    ? {
+        ...baseFrameConfig,
+        maxFrames: Math.max(baseFrameConfig.minFrames, maxFramesOverride),
+      }
+    : baseFrameConfig;
 
   const timer = createTimer();
   timer.setVideoUrl(videoUrl);
@@ -475,7 +488,7 @@ export async function analyzeVideo({
     await onStatusChange?.("analyzing", { analysisId: analysis.id });
 
     let audioTranscript: string | null = null;
-    if (downloadResult.audioPath) {
+    if (downloadResult.audioPath && !skipAudioTranscription) {
       timer.startStage("audio_transcription");
       audioTranscript = await transcribeAudioWithGemini(downloadResult.audioPath);
       timer.endStage();
