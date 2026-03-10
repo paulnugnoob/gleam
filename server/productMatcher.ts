@@ -97,6 +97,17 @@ const queryCache = new Map<
   { products: MakeupApiProduct[]; timestamp: number }
 >();
 const CACHE_DURATION_MS = 10 * 60 * 1000;
+const LOSSY_MATCHED_TYPES = new Set(["foundation", "lipstick", "blush", "bronzer"]);
+const LOSSY_CATEGORY_KEYS = new Set([
+  "primer",
+  "setting_spray",
+  "powder",
+  "concealer",
+  "highlighter",
+  "contour",
+  "lip_liner",
+  "lip_gloss",
+]);
 
 async function fetchWithTimeout(
   url: string,
@@ -161,6 +172,74 @@ async function queryProducts(params: {
   }
 }
 
+function normalizeToken(value: string): string {
+  return value.toLowerCase().replace(/[^\w]/g, "");
+}
+
+function getNameTokenStats(
+  normalized: NormalizedProduct,
+  apiProduct: MakeupApiProduct,
+): {
+  matchedTokens: number;
+  expectedTokenCount: number;
+  productTokenCount: number;
+  hasOrderedPhraseMatch: boolean;
+} {
+  const nameTokens = apiProduct.name
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const normalizedExpectedTokens = normalized.nameTokens.map(normalizeToken);
+  const normalizedProductTokens = nameTokens.map(normalizeToken);
+
+  let matchedTokens = 0;
+  for (const token of normalizedExpectedTokens) {
+    if (
+      normalizedProductTokens.some(
+        (productToken) =>
+          productToken.includes(token) || token.includes(productToken),
+      )
+    ) {
+      matchedTokens += 1;
+    }
+  }
+
+  const expectedPhrase = normalizedExpectedTokens.join(" ").trim();
+  const productPhrase = normalizedProductTokens.join(" ").trim();
+  const hasOrderedPhraseMatch =
+    Boolean(expectedPhrase) &&
+    Boolean(productPhrase) &&
+    (productPhrase.includes(expectedPhrase) || expectedPhrase.includes(productPhrase));
+
+  return {
+    matchedTokens,
+    expectedTokenCount: normalizedExpectedTokens.length,
+    productTokenCount: normalizedProductTokens.length,
+    hasOrderedPhraseMatch,
+  };
+}
+
+function isLossyMappedCategory(normalized: NormalizedProduct): boolean {
+  const searchType = getMakeupApiProductType(normalized.categoryKey);
+  return (
+    LOSSY_CATEGORY_KEYS.has(normalized.categoryKey) ||
+    LOSSY_MATCHED_TYPES.has(searchType)
+  );
+}
+
+function uniqueProducts(products: MakeupApiProduct[]): MakeupApiProduct[] {
+  const seen = new Set<number>();
+  return products.filter((product) => {
+    if (seen.has(product.id)) {
+      return false;
+    }
+    seen.add(product.id);
+    return true;
+  });
+}
+
 function scoreMatch(
   normalized: NormalizedProduct,
   apiProduct: MakeupApiProduct,
@@ -194,7 +273,28 @@ function scoreMatch(
     typeMatch = 0.5;
   }
 
-  nameMatch = calculateNameSimilarity(normalized.nameTokens, apiProduct.name);
+  const baselineNameSimilarity = calculateNameSimilarity(
+    normalized.nameTokens,
+    apiProduct.name,
+  );
+  const tokenStats = getNameTokenStats(normalized, apiProduct);
+  const expectedCoverage =
+    tokenStats.expectedTokenCount > 0
+      ? tokenStats.matchedTokens / tokenStats.expectedTokenCount
+      : 0;
+  const productCoverage =
+    tokenStats.productTokenCount > 0
+      ? tokenStats.matchedTokens / tokenStats.productTokenCount
+      : 0;
+
+  nameMatch = Math.max(
+    baselineNameSimilarity,
+    expectedCoverage * 0.7 + productCoverage * 0.3,
+  );
+
+  if (tokenStats.hasOrderedPhraseMatch) {
+    nameMatch = Math.min(1, nameMatch + 0.15);
+  }
 
   const brandWeight = normalized.brandSlug ? 0.4 : 0;
   const typeWeight = 0.3;
@@ -237,6 +337,14 @@ function passesMatchThreshold(
       return false;
     }
 
+    if (normalized.nameTokens.length >= 3 && score.nameMatch < 0.3) {
+      return false;
+    }
+
+    if (isLossyMappedCategory(normalized) && score.nameMatch < 0.4) {
+      return false;
+    }
+
     return score.overall >= 0.45;
   }
 
@@ -269,13 +377,18 @@ export async function findBestMatches(
   }
 
   if (brandAvailable && searchBrand && searchType) {
-    const [brandTypeProducts, typeProducts] = await Promise.all([
+    const shouldQueryBrandOnly = isLossyMappedCategory(normalized);
+    const [brandTypeProducts, typeProducts, brandOnlyProducts] = await Promise.all([
       queryProducts({ brand: searchBrand, product_type: searchType }),
       queryProducts({ product_type: searchType }),
+      shouldQueryBrandOnly ? queryProducts({ brand: searchBrand }) : Promise.resolve([]),
     ]);
 
-    candidates =
-      brandTypeProducts.length > 0 ? brandTypeProducts : typeProducts;
+    candidates = uniqueProducts([
+      ...brandTypeProducts,
+      ...brandOnlyProducts,
+      ...(brandTypeProducts.length > 0 ? [] : typeProducts),
+    ]);
   } else if (searchType) {
     candidates = await queryProducts({ product_type: searchType });
   } else if (brandAvailable && searchBrand) {
@@ -296,7 +409,15 @@ export async function findBestMatches(
     score: scoreMatch(normalized, product),
   }));
 
-  scored.sort((a, b) => b.score.overall - a.score.overall);
+  scored.sort((a, b) => {
+    if (b.score.overall !== a.score.overall) {
+      return b.score.overall - a.score.overall;
+    }
+    if (b.score.nameMatch !== a.score.nameMatch) {
+      return b.score.nameMatch - a.score.nameMatch;
+    }
+    return b.score.brandMatch - a.score.brandMatch;
+  });
 
   return scored
     .filter((result) => passesMatchThreshold(normalized, result.score))
