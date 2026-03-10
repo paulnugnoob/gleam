@@ -1,0 +1,360 @@
+{
+  "name": "Gleam Baseline Set v1",
+  "description": "Locked YouTube-only baseline set for initial beauty-video ingestion, product extraction, and catalog matching evaluation. This set intentionally mixes easier tutorial videos with a few noisier cases.",
+  "cases": [
+    {
+      "id": "search-denitslava-soft-glam",
+      "url": "https://www.youtube.com/watch?v=gY3-wHA_qQc",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. Soft glam tutorial with detailed product list in the description.",
+      "expectedProducts": [
+        {
+          "name": "Flawless Fusion Foundation",
+          "brand": "Laura Mercier",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Flawless Fusion Concealer",
+          "brand": "Laura Mercier",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "24-HR Brow Setter",
+          "brand": "Benefit",
+          "type": "brow",
+          "required": false,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Blush in Frisky Business",
+          "brand": "ColourPop",
+          "type": "blush",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "creator-allie-wedding-soft-glam",
+      "url": "https://www.youtube.com/watch?v=yem10Pv1AL8",
+      "platform": "YouTube",
+      "notes": "Creator-lane. Easy. Allie Glines wedding soft glam tutorial with timestamped product list.",
+      "expectedProducts": [
+        {
+          "name": "Vitamin Enriched Face Base",
+          "brand": "Bobbi Brown",
+          "type": "primer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Ultra HD Foundation",
+          "brand": "Make Up For Ever",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Airbrush Flawless Finish Setting Spray",
+          "brand": "Charlotte Tilbury",
+          "type": "setting_spray",
+          "required": false,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Lipstick in Wedding Belles",
+          "brand": "Charlotte Tilbury",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    },
+    {
+      "id": "search-beautybygbemi-easy-soft-glam",
+      "url": "https://www.youtube.com/watch?v=dgM3rldhjzc",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. Soft glam look with concise product list. Good for dark-skin coverage.",
+      "expectedProducts": [
+        {
+          "name": "Stay Naked Foundation",
+          "brand": "Urban Decay",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Pro Concealer",
+          "brand": "LA Girl",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Liquid Lipstick in Sepia",
+          "brand": "Anastasia Beverly Hills",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Bronzer in Mocha Mami",
+          "brand": "Fenty Beauty",
+          "type": "bronzer",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "search-puspita-nyx-soft-glam",
+      "url": "https://www.youtube.com/watch?v=upz61aYWhHM",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. One-brand NYX tutorial makes product labeling relatively clean.",
+      "expectedProducts": [
+        {
+          "name": "Angel Veil Skin Perfecting Primer",
+          "brand": "NYX",
+          "type": "primer",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Total Control Drop Foundation",
+          "brand": "NYX",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Highlight and Contour Pro Palette",
+          "brand": "NYX",
+          "type": "contour",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Liquid Suede Soft Spoken",
+          "brand": "NYX",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "search-smitha-office-makeup",
+      "url": "https://www.youtube.com/watch?v=MHV8AubjnL0",
+      "platform": "YouTube",
+      "notes": "Search-led. Medium. Office/tutorial format from a strong tutorial creator, but the description is less structured.",
+      "expectedProducts": [
+        {
+          "name": "Office Makeup Look",
+          "brand": null,
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Office Makeup Look",
+          "brand": null,
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Office Makeup Look",
+          "brand": null,
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    },
+    {
+      "id": "search-lauren-date-night",
+      "url": "https://www.youtube.com/watch?v=EouBrjdaJQY",
+      "platform": "YouTube",
+      "notes": "Search-led. Medium. Date-night tutorial with a clear but older product list and soft smokey-eye framing.",
+      "expectedProducts": [
+        {
+          "name": "Luminous Silk Foundation",
+          "brand": "Giorgio Armani",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Radiant Creamy Concealer",
+          "brand": "NARS",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "39 Color Special Occasion Palette",
+          "brand": "BH Cosmetics",
+          "type": "eyeshadow",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    },
+    {
+      "id": "search-fromheadtotoe-drugstore-fall",
+      "url": "https://www.youtube.com/watch?v=-v5XOMRb7tc",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. Drugstore tutorial with a short product list and several catalog-friendly brands.",
+      "expectedProducts": [
+        {
+          "name": "Healthy Skin Foundation",
+          "brand": "Neutrogena",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Mineral Wear Powder",
+          "brand": "Physicians Formula",
+          "type": "powder",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Black Label Lipstick in Diva",
+          "brand": "NYX",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Blush in Luminous",
+          "brand": "Milani",
+          "type": "blush",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "creator-wayne-mature-makeup",
+      "url": "https://www.youtube.com/watch?v=iuJqiUzz5VA",
+      "platform": "YouTube",
+      "notes": "Creator-lane. Medium. Older Wayne Goss tutorial with sparse metadata and older product naming conventions.",
+      "expectedProducts": [
+        {
+          "name": "HD Foundation",
+          "brand": "Make Up For Ever",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Concealer Pen",
+          "brand": "Make Up For Ever",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Lipstick",
+          "brand": "MAC",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    },
+    {
+      "id": "creator-manny-copper-smokey-eye",
+      "url": "https://www.youtube.com/watch?v=nGd3ILcIepc",
+      "platform": "YouTube",
+      "notes": "Creator-lane. Hard. Older Manny tutorial with a strong eyeshadow focus and more fragmented product evidence.",
+      "expectedProducts": [
+        {
+          "name": "Pro Longwear Concealer",
+          "brand": "MAC",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Eyeshadow in Cocoa Bear",
+          "brand": "Makeup Geek",
+          "type": "eyeshadow",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Brow Bar",
+          "brand": "Gerard Cosmetics",
+          "type": "brow",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    },
+    {
+      "id": "search-vyqwaint-drugstore-full-face",
+      "url": "https://www.youtube.com/watch?v=xc6pfNUoD1Y",
+      "platform": "YouTube",
+      "notes": "Search-led. Hard. Multi-look drugstore tutorial, useful for seeing how the pipeline behaves on noisier content.",
+      "expectedProducts": [
+        {
+          "name": "Fit Me Matte + Poreless Foundation",
+          "brand": "Maybelline",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "HD Pro Concealer",
+          "brand": "LA Girl",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "MegaLast Lip Color Bare It All 902C",
+          "brand": "Wet n Wild",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "search-beautybygbemi-grwm-soft-glam",
+      "url": "https://www.youtube.com/watch?v=0UgDd2qXVx0",
+      "platform": "YouTube",
+      "notes": "Search-led. Medium. GRWM soft glam variant with multiple complexion products and more ambiguity.",
+      "expectedProducts": [
+        {
+          "name": "Stay Naked Foundation",
+          "brand": "Urban Decay",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Soft Glam Palette",
+          "brand": "Anastasia Beverly Hills",
+          "type": "eyeshadow",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Lip Pencil Trend Setter",
+          "brand": "Morphe",
+          "type": "lip_liner",
+          "required": false,
+          "mustMatchCatalog": false
+        }
+      ]
+    }
+  ]
+}

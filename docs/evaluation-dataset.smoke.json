@@ -1,0 +1,114 @@
+{
+  "name": "Gleam Smoke Baseline Set",
+  "description": "Three easier YouTube makeup tutorials used to get a fast first baseline on ingestion, product extraction, and catalog matching.",
+  "cases": [
+    {
+      "id": "search-denitslava-soft-glam",
+      "url": "https://www.youtube.com/watch?v=gY3-wHA_qQc",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. Soft glam tutorial with detailed product list in the description.",
+      "expectedProducts": [
+        {
+          "name": "Flawless Fusion Foundation",
+          "brand": "Laura Mercier",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Flawless Fusion Concealer",
+          "brand": "Laura Mercier",
+          "type": "concealer",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "24-HR Brow Setter",
+          "brand": "Benefit",
+          "type": "brow",
+          "required": false,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Blush in Frisky Business",
+          "brand": "ColourPop",
+          "type": "blush",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "search-puspita-nyx-soft-glam",
+      "url": "https://www.youtube.com/watch?v=upz61aYWhHM",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. One-brand NYX tutorial makes product labeling relatively clean.",
+      "expectedProducts": [
+        {
+          "name": "Angel Veil Skin Perfecting Primer",
+          "brand": "NYX",
+          "type": "primer",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Total Control Drop Foundation",
+          "brand": "NYX",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Highlight and Contour Pro Palette",
+          "brand": "NYX",
+          "type": "contour",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Liquid Suede Soft Spoken",
+          "brand": "NYX",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    },
+    {
+      "id": "search-fromheadtotoe-drugstore-fall",
+      "url": "https://www.youtube.com/watch?v=-v5XOMRb7tc",
+      "platform": "YouTube",
+      "notes": "Search-led. Easy. Drugstore tutorial with a short product list and several catalog-friendly brands.",
+      "expectedProducts": [
+        {
+          "name": "Healthy Skin Foundation",
+          "brand": "Neutrogena",
+          "type": "foundation",
+          "required": true,
+          "mustMatchCatalog": false
+        },
+        {
+          "name": "Mineral Wear Powder",
+          "brand": "Physicians Formula",
+          "type": "powder",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Black Label Lipstick in Diva",
+          "brand": "NYX",
+          "type": "lipstick",
+          "required": false,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Blush in Luminous",
+          "brand": "Milani",
+          "type": "blush",
+          "required": false,
+          "mustMatchCatalog": true
+        }
+      ]
+    }
+  ]
+}

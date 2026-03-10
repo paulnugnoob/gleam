@@ -218,6 +218,7 @@ The product should not depend on subscription revenue to validate v1. Trust and 
 - Product-link click is the main success metric
 - YouTube-first is the recommended launch platform
 - Exact shoppable product matching is the core wedge
+- Baseline evaluation should use a locked YouTube-only dataset before broadening scope
 - Tutorial steps are secondary
 - Confidence must be visible
 - Human review is a bootstrapping tool, not the business

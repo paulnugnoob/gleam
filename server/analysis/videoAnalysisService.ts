@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import { gemini as ai } from "../gemini";
+import { runJsonCompletion, transcribeAudio } from "../aiProvider";
 import { storage } from "../storage";
 import {
   downloadVideo,
@@ -62,15 +62,13 @@ async function analyzeVideoWithGemini(
   metadata: VideoMetadata,
   audioTranscript: string | null = null,
 ): Promise<AnalysisResult> {
-  const imageParts = framePaths.map((framePath) => ({
-    inlineData: {
-      mimeType: getMimeType(framePath),
-      data: readFileAsBase64(framePath),
-    },
+  const images = framePaths.map((framePath) => ({
+    mimeType: getMimeType(framePath),
+    data: readFileAsBase64(framePath),
   }));
 
-  const frameBase64s = imageParts.map(
-    (part) => `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+  const frameBase64s = images.map(
+    (image) => `data:${image.mimeType};base64,${image.data}`,
   );
 
   const transcriptSection = audioTranscript
@@ -128,21 +126,24 @@ Respond in this exact JSON format:
   ]
 }`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [{ role: "user", parts: [{ text: prompt }, ...imageParts] }],
+  const completion = await runJsonCompletion<{
+    title?: string;
+    products?: any[];
+    steps?: TutorialStep[];
+  }>({
+    prompt,
+    images,
   });
 
-  const responseText = response.text || "";
-
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return { ...parsed, prompt, rawResponse: responseText, frameBase64s };
-    }
-  } catch (parseError) {
-    console.error("Error parsing AI response:", parseError);
+  if (completion.parsed) {
+    return {
+      title: completion.parsed.title || metadata.title.slice(0, 50) || "Beauty Tutorial",
+      products: completion.parsed.products || [],
+      steps: completion.parsed.steps || [],
+      prompt,
+      rawResponse: completion.text,
+      frameBase64s,
+    };
   }
 
   return {
@@ -150,7 +151,7 @@ Respond in this exact JSON format:
     products: [],
     steps: [],
     prompt,
-    rawResponse: responseText,
+    rawResponse: completion.text,
     frameBase64s,
   };
 }
@@ -160,28 +161,10 @@ async function transcribeAudioWithGemini(audioPath: string): Promise<string | nu
     if (!fs.existsSync(audioPath)) {
       return null;
     }
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          role: "user" as const,
-          parts: [
-            {
-              text: "Please transcribe the audio in this file. Extract all spoken words, including any product names, brand names, or beauty-related terms mentioned. If there's no speech or the audio is unclear, indicate that. Provide only the transcription text without any additional commentary.",
-            },
-            {
-              inlineData: {
-                mimeType: getMimeType(audioPath),
-                data: readFileAsBase64(audioPath),
-              },
-            },
-          ],
-        },
-      ],
+    return await transcribeAudio({
+      mimeType: getMimeType(audioPath),
+      data: readFileAsBase64(audioPath),
     });
-
-    return response.text?.trim() || null;
   } catch (error) {
     console.error("Error transcribing audio:", error);
     return null;
@@ -386,11 +369,13 @@ Respond in this exact JSON format:
   ]
 }`;
 
-  const fallbackResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [{ role: "user", parts: [{ text: fallbackPrompt }] }],
+  const fallbackResponse = await runJsonCompletion<{
+    title?: string;
+    products?: any[];
+    steps?: TutorialStep[];
+  }>({
+    prompt: fallbackPrompt,
   });
-
   const responseText = fallbackResponse.text || "";
   let analysisData = {
     title: metadata.title.slice(0, 50) || "Beauty Tutorial",
@@ -398,13 +383,12 @@ Respond in this exact JSON format:
     steps: [] as TutorialStep[],
   };
 
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      analysisData = JSON.parse(jsonMatch[0]);
-    }
-  } catch (parseError) {
-    console.error("Error parsing fallback AI response:", parseError);
+  if (fallbackResponse.parsed) {
+    analysisData = {
+      title: fallbackResponse.parsed.title || analysisData.title,
+      products: fallbackResponse.parsed.products || [],
+      steps: fallbackResponse.parsed.steps || [],
+    };
   }
 
   await storage.updateVideoAnalysis(analysis.id, {

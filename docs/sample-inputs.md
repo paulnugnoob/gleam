@@ -13,6 +13,10 @@ Use it to track:
 
 The goal is not to build a gold dataset here. The goal is to make local testing repeatable.
 
+If you want to turn a subset of these into a measurable baseline, copy them into
+`docs/evaluation-dataset.json` using `docs/evaluation-dataset.example.json` and run
+`npm run eval:baseline`.
+
 ## How To Use This File
 
 For each URL, note:

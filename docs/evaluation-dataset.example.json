@@ -1,0 +1,28 @@
+{
+  "name": "Gleam Baseline Set",
+  "description": "Small manually labeled beauty-video set for product extraction and catalog-match evaluation.",
+  "cases": [
+    {
+      "id": "example-youtube-1",
+      "url": "https://www.youtube.com/watch?v=REPLACE_ME",
+      "platform": "YouTube",
+      "notes": "Creator clearly names products on screen and in audio.",
+      "expectedProducts": [
+        {
+          "name": "Soft Pinch Liquid Blush",
+          "brand": "Rare Beauty",
+          "type": "blush",
+          "required": true,
+          "mustMatchCatalog": true
+        },
+        {
+          "name": "Gloss Bomb",
+          "brand": "Fenty Beauty",
+          "type": "lip_gloss",
+          "required": true,
+          "mustMatchCatalog": true
+        }
+      ]
+    }
+  ]
+}
