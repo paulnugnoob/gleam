@@ -319,9 +319,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
       flex-shrink: 0;
     }
     .drawer-header h2 { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
+    .drawer-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
     .drawer-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; }
     .drawer-close:hover { background: #f3f4f6; color: var(--text); }
 
@@ -785,6 +792,7 @@
             <option value="has_candidates">Has Candidate Matches</option>
             <option value="clean">Clean / No Queue Flags</option>
           </select>
+          <button class="btn btn-primary" onclick="openNextReviewItem()">Next Review Item</button>
           <div class="toolbar-spacer"></div>
           <div class="queue-hint" id="queueHint">Queue view shows all analyses.</div>
         </div>
@@ -1033,7 +1041,10 @@
   <div class="drawer" id="drawer">
     <div class="drawer-header">
       <h2 id="drawerTitle">Video Detail</h2>
-      <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+      <div class="drawer-header-actions">
+        <button class="btn btn-secondary btn-sm" id="drawerNextReviewBtn" onclick="openNextReviewItem(true)">Next Review</button>
+        <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+      </div>
     </div>
     <div class="drawer-tabs" id="drawerTabsContainer">
       <button class="drawer-tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
@@ -1091,7 +1102,7 @@
     /* ── State ── */
     let analyses = [];
     let filteredAnalyses = [];
-    let currentSort = { key: 'createdAt', dir: 'desc' };
+    let currentSort = { key: 'feedback', dir: 'desc' };
     let refreshTimer = null;
     let discoveredVideos = [];
     let currentDetailData = null;
@@ -1202,6 +1213,39 @@
     }
 
     /* ── Table ── */
+    function getReviewPriorityScore(a) {
+      return ((a.unresolvedFeedbackCount || 0) * 1000) +
+        ((a.needsReviewCount || 0) * 100) +
+        ((a.candidateCount || 0) * 10) +
+        ((a.hasFeedback ? 1 : 0) * 5) +
+        (a.status === 'completed' ? 1 : 0);
+    }
+
+    function getReviewQueue() {
+      return analyses
+        .filter(a => a.needsReview)
+        .slice()
+        .sort((a, b) => {
+          const priorityDelta = getReviewPriorityScore(b) - getReviewPriorityScore(a);
+          if (priorityDelta !== 0) return priorityDelta;
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+    }
+
+    function isAnalysisStillInReview(id) {
+      const item = analyses.find(a => a.id === id);
+      return !!item?.needsReview;
+    }
+
+    function updateDrawerQueueButton() {
+      const btn = document.getElementById('drawerNextReviewBtn');
+      if (!btn) return;
+      const queue = getReviewQueue();
+      btn.style.display = currentDrawerMode === 'video' ? 'inline-flex' : 'none';
+      btn.disabled = queue.length === 0;
+      btn.textContent = queue.length > 0 ? 'Next Review (' + queue.length + ')' : 'Queue Clear';
+    }
+
     function filterTable() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const status = document.getElementById('statusFilter').value;
@@ -1217,6 +1261,7 @@
       });
       updateQueueHint(review, filteredAnalyses.length);
       sortAndRender();
+      updateDrawerQueueButton();
     }
 
     function updateQueueHint(review, count) {
@@ -1257,7 +1302,7 @@
         if (key === 'createdAt') { av = new Date(av || 0).getTime(); bv = new Date(bv || 0).getTime(); }
         if (key === 'steps') { av = a.stepCount || 0; bv = b.stepCount || 0; }
         if (key === 'products') { av = a.productCount || 0; bv = b.productCount || 0; }
-        if (key === 'feedback') { av = (a.feedbackCount || 0) + (a.candidateCount || 0); bv = (b.feedbackCount || 0) + (b.candidateCount || 0); }
+        if (key === 'feedback') { av = getReviewPriorityScore(a); bv = getReviewPriorityScore(b); }
         if (key === 'processingTime') { av = a.processingTimeMs || 0; bv = b.processingTimeMs || 0; }
         if (av == null) av = '';
         if (bv == null) bv = '';
@@ -1265,6 +1310,26 @@
         return (av - bv) * dir;
       });
       renderTable();
+    }
+
+    function openNextReviewItem(fromDrawer) {
+      const queue = getReviewQueue();
+      if (queue.length === 0) {
+        toast('Review queue is clear', 'success');
+        return;
+      }
+
+      let target = queue[0];
+      if (fromDrawer && currentDetailData?.id) {
+        const currentIndex = queue.findIndex(a => a.id === currentDetailData.id);
+        if (currentIndex >= 0 && currentIndex < queue.length - 1) {
+          target = queue[currentIndex + 1];
+        }
+      }
+
+      document.getElementById('reviewFilter').value = 'needs_review';
+      filterTable();
+      openDrawer(target.id);
     }
 
     function renderTable() {
@@ -1386,8 +1451,12 @@
         });
         if (!res.ok) throw new Error('Failed to update feedback');
         toast('Feedback updated', 'success');
-        if (currentDetailData?.id) await loadDetail(currentDetailData.id);
         await loadAnalyses();
+        if (currentDetailData?.id && isAnalysisStillInReview(currentDetailData.id)) {
+          await loadDetail(currentDetailData.id);
+        } else if (currentDetailData?.id) {
+          openNextReviewItem(true);
+        }
       } catch (e) {
         console.error(e);
         toast('Failed to update feedback', 'error');
@@ -1403,8 +1472,12 @@
         });
         if (!res.ok) throw new Error('Failed to review product');
         toast('Product review saved', 'success');
-        if (currentDetailData?.id) await loadDetail(currentDetailData.id);
         await loadAnalyses();
+        if (currentDetailData?.id && isAnalysisStillInReview(currentDetailData.id)) {
+          await loadDetail(currentDetailData.id);
+        } else if (currentDetailData?.id) {
+          openNextReviewItem(true);
+        }
       } catch (e) {
         console.error(e);
         toast('Failed to review product', 'error');
@@ -1424,6 +1497,7 @@
       document.getElementById('drawerTitle').textContent = analysis.title || 'Video Detail';
       document.getElementById('drawerLoading').style.display = 'none';
       document.getElementById('overviewContent').style.display = 'block';
+      updateDrawerQueueButton();
 
       // Overview
       document.getElementById('overviewContent').innerHTML = `
@@ -1470,6 +1544,7 @@
           const conf = parseFloat(p.aiConfidence) || 0;
           const matchScore = p.matchScore ? p.matchScore.overall : null;
           const reviewStatus = p.reviewStatus || 'unreviewed';
+          const alternatives = Array.isArray(p.matchedProductAlternatives) ? p.matchedProductAlternatives : [];
           return `<div class="product-card">
             <h4>${escapeHtml(p.aiDetectedName)}</h4>
             <div class="detail">Brand: ${escapeHtml(p.aiDetectedBrand || 'Unknown')}</div>
@@ -1480,8 +1555,18 @@
             ${p.matchedProductName ? `<div class="match-info">
               <div class="detail" style="font-weight:600;color:var(--text);">Matched: ${escapeHtml(p.matchedProductName)}</div>
               <div class="detail">Brand: ${escapeHtml(p.matchedProductBrand || '--')}</div>
+              <div class="detail">Source: ${escapeHtml(p.matchedProductMarketplace || p.matchedProductSource || '--')}</div>
               ${matchScore != null ? `<div class="detail">Match Score: ${(matchScore * 100).toFixed(0)}%</div>` : ''}
             </div>` : '<div class="match-info"><div class="detail" style="color:#9ca3af;">No catalog match</div></div>'}
+            ${alternatives.length ? `<div class="match-info" style="margin-top:8px;">
+              <div class="detail" style="font-weight:600;color:var(--text);margin-bottom:4px;">Alternatives</div>
+              ${alternatives.map((alt, index) => `
+                <div class="detail" style="margin-bottom:6px;">
+                  ${index + 1}. ${escapeHtml(alt.name || '--')}<br>
+                  <span style="color:var(--text-secondary);">${escapeHtml(alt.brand || '--')} | ${escapeHtml(alt.marketplace || alt.source || '--')}${alt.score?.overall != null ? ` | ${(alt.score.overall * 100).toFixed(0)}%` : ''}</span>
+                </div>
+              `).join('')}
+            </div>` : ''}
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
               <button class="btn btn-secondary btn-sm" onclick="reviewProduct(${p.id}, 'approved')">Approve</button>
               <button class="btn btn-secondary btn-sm" onclick="reviewProduct(${p.id}, 'rejected')">Reject</button>

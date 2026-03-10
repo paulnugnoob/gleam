@@ -205,7 +205,7 @@ async function persistDetectedProducts(
         normalizedNameTokens: normalized.nameTokens,
       });
 
-      const { match, score } = await matchProduct(normalized);
+      const { match, score, alternatives } = await matchProduct(normalized);
       if (!match) return;
 
       const catalog = formatCatalogProduct(match);
@@ -214,6 +214,9 @@ async function persistDetectedProducts(
           match.source === "makeup_api" && Number.isInteger(Number(match.sourceId))
             ? Number(match.sourceId)
             : null,
+        matchedProductSource: match.source,
+        matchedProductSourceId: match.sourceId,
+        matchedProductMarketplace: match.marketplace,
         matchedProductName: catalog.catalogName,
         matchedProductBrand: catalog.catalogBrand,
         matchedProductImage: catalog.catalogImageUrl,
@@ -224,6 +227,19 @@ async function persistDetectedProducts(
         matchedProductColors: catalog.catalogColors.map((c) => ({
           hex_value: c.hex,
           colour_name: c.name,
+        })),
+        matchedProductAlternatives: alternatives.map(({ product, score }) => ({
+          source: product.source,
+          sourceId: product.sourceId,
+          marketplace: product.marketplace,
+          name: product.name,
+          brand: product.brand,
+          price: product.price?.toString() || null,
+          imageUrl: product.imageUrl,
+          productUrl: product.productUrl,
+          description: product.description,
+          productType: product.productType,
+          score,
         })),
         matchScore: score,
       });

@@ -652,6 +652,15 @@ export default function DebugAnalysisScreen() {
                       {product.matchedProductBrand} -{" "}
                       {product.matchedProductName}
                     </ThemedText>
+                    <ThemedText
+                      type="caption"
+                      style={{ color: theme.textSecondary, marginTop: 4 }}
+                    >
+                      Source:{" "}
+                      {product.matchedProductMarketplace ||
+                        product.matchedProductSource ||
+                        "unknown"}
+                    </ThemedText>
                     {product.matchScore ? (
                       <View style={styles.scoreGrid}>
                         <View style={styles.scoreItem}>
@@ -711,6 +720,27 @@ export default function DebugAnalysisScreen() {
                             %
                           </ThemedText>
                         </View>
+                      </View>
+                    ) : null}
+                    {product.matchedProductAlternatives?.length ? (
+                      <View style={{ marginTop: Spacing.sm }}>
+                        <ThemedText
+                          type="caption"
+                          style={{ color: theme.textSecondary }}
+                        >
+                          Alternatives
+                        </ThemedText>
+                        {product.matchedProductAlternatives.map((alternative, index) => (
+                          <ThemedText
+                            key={`${product.id}-alt-${index}`}
+                            type="small"
+                            style={{ color: theme.textSecondary, marginTop: 2 }}
+                          >
+                            {index + 1}. {alternative.name} |{" "}
+                            {alternative.brand || "unknown"} |{" "}
+                            {alternative.marketplace || alternative.source}
+                          </ThemedText>
+                        ))}
                       </View>
                     ) : null}
                   </View>

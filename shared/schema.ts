@@ -117,6 +117,9 @@ export const detectedProducts = pgTable("detected_products", {
   normalizedCategoryKey: text("normalized_category_key"),
   normalizedNameTokens: jsonb("normalized_name_tokens").$type<string[]>(),
   matchedProductId: integer("matched_product_id"),
+  matchedProductSource: text("matched_product_source"),
+  matchedProductSourceId: text("matched_product_source_id"),
+  matchedProductMarketplace: text("matched_product_marketplace"),
   matchedProductName: text("matched_product_name"),
   matchedProductBrand: text("matched_product_brand"),
   matchedProductImage: text("matched_product_image"),
@@ -125,6 +128,9 @@ export const detectedProducts = pgTable("detected_products", {
   matchedProductUrl: text("matched_product_url"),
   matchedProductDescription: text("matched_product_description"),
   matchedProductColors: jsonb("matched_product_colors").$type<ProductColor[]>(),
+  matchedProductAlternatives: jsonb("matched_product_alternatives").$type<
+    CatalogAlternative[]
+  >(),
   matchScore: jsonb("match_score").$type<MatchScore>(),
   reviewStatus: text("review_status").default("unreviewed"),
   adminNote: text("admin_note"),
@@ -247,6 +253,20 @@ export interface MatchScore {
   brandMatch: number;
   typeMatch: number;
   nameMatch: number;
+}
+
+export interface CatalogAlternative {
+  source: string;
+  sourceId: string;
+  marketplace: string | null;
+  name: string;
+  brand: string | null;
+  price: string | null;
+  imageUrl: string | null;
+  productUrl: string | null;
+  description: string | null;
+  productType: string | null;
+  score: MatchScore | null;
 }
 
 export type ProductConfidenceBucket = "exact" | "candidate" | "hidden";
