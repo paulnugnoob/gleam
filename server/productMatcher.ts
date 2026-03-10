@@ -95,6 +95,7 @@ interface MatchResult {
 export interface CatalogProduct {
   source: "ebay" | "makeup_api";
   sourceId: string;
+  marketplace: string | null;
   name: string;
   brand: string | null;
   price: number | null;
@@ -109,6 +110,11 @@ export interface CatalogProduct {
 interface CatalogMatchResult {
   product: CatalogProduct;
   score: MatchScore;
+}
+
+export interface CatalogAlternativeMatch {
+  product: CatalogProduct;
+  score: MatchScore | null;
 }
 
 const queryCache = new Map<
@@ -489,6 +495,7 @@ async function findEbayMatches(
   const candidates = (json.itemSummaries || []).map((item): CatalogProduct => ({
     source: "ebay",
     sourceId: item.itemId,
+    marketplace: "eBay",
     name: item.title,
     brand: normalized.brandSlug
       ? getMakeupApiBrandSlug(normalized.brandSlug)
@@ -544,6 +551,7 @@ function toCatalogProduct(apiProduct: MakeupApiProduct): CatalogProduct {
   return {
     source: "makeup_api",
     sourceId: String(apiProduct.id),
+    marketplace: "Makeup API",
     name: apiProduct.name,
     brand: apiProduct.brand || null,
     price: formatPrice(apiProduct.price),
@@ -878,7 +886,7 @@ export async function matchProduct(
 ): Promise<{
   match: CatalogProduct | null;
   score: MatchScore | null;
-  alternatives: CatalogProduct[];
+  alternatives: CatalogAlternativeMatch[];
 }> {
   const providerOrder = getCatalogProviderOrder();
 
@@ -889,7 +897,9 @@ export async function matchProduct(
         return {
           match: ebayMatches[0].product,
           score: ebayMatches[0].score,
-          alternatives: ebayMatches.slice(1, 4).map((match) => match.product),
+          alternatives: ebayMatches
+            .slice(1, 4)
+            .map((match) => ({ product: match.product, score: match.score })),
         };
       }
       continue;
@@ -901,7 +911,12 @@ export async function matchProduct(
       return {
         match: toCatalogProduct(matches[0].product),
         score: matches[0].score,
-        alternatives: matches.slice(1, 4).map((match) => toCatalogProduct(match.product)),
+        alternatives: matches
+          .slice(1, 4)
+          .map((match) => ({
+            product: toCatalogProduct(match.product),
+            score: match.score,
+          })),
       };
     }
   }

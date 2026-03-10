@@ -1,0 +1,1123 @@
+{
+  "generatedAt": "2026-03-10T13:22:15.080Z",
+  "dataset": "Gleam Smoke Baseline Set",
+  "summary": {
+    "dataset": "Gleam Smoke Baseline Set",
+    "provider": "openai",
+    "maxFrames": 10,
+    "skipAudioTranscription": false,
+    "casesRun": 3,
+    "casesFailed": 0,
+    "expectedProducts": 12,
+    "averageRuntimeSec": 80.9,
+    "detectionRecallPct": 50,
+    "catalogRecallPct": 8.3,
+    "presentedPrecisionPct": 28.6,
+    "exactPrecisionPct": 25,
+    "catalogPrecisionPct": 4.8
+  },
+  "caseResults": [
+    {
+      "id": "search-denitslava-soft-glam",
+      "url": "https://www.youtube.com/watch?v=gY3-wHA_qQc",
+      "status": "completed",
+      "analysisId": 32,
+      "expectedCount": 4,
+      "detectedCount": 4,
+      "presentedCount": 4,
+      "exactCount": 0,
+      "candidateCount": 4,
+      "hiddenCount": 0,
+      "presentedMatchedCount": 1,
+      "exactMatchedCount": 0,
+      "catalogMatchedCount": 0,
+      "durationMs": 74595,
+      "expectedProducts": [
+        {
+          "expected": {
+            "name": "Flawless Fusion Foundation",
+            "brand": "Laura Mercier",
+            "type": "foundation",
+            "required": true,
+            "mustMatchCatalog": false
+          },
+          "detectedMatch": {
+            "id": 172,
+            "videoAnalysisId": 32,
+            "aiDetectedName": "Flawless Fusion Ultra Longwear Foundation",
+            "aiDetectedBrand": "Laura Mercier",
+            "aiDetectedType": "foundation",
+            "aiDetectedColor": "1N1",
+            "aiDetectedDescription": "Applied for full coverage matte finish foundation, shade 1N1; blended down neck",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Described in detail including shade, coverage and finish",
+              "visual": null,
+              "metadata": "Laura Mercier brand mentioned in description"
+            },
+            "normalizedBrandSlug": "laura_mercier",
+            "normalizedCategoryKey": "foundation",
+            "normalizedNameTokens": [
+              "flawless",
+              "fusion",
+              "ultra",
+              "longwear",
+              "foundation"
+            ],
+            "matchedProductId": 315,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "315",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "e.l.f. Studio Tinted Moisturizer",
+            "matchedProductBrand": "e.l.f.",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/315/original/data?1514063300",
+            "matchedProductPrice": "4.99",
+            "matchedProductType": "foundation",
+            "matchedProductUrl": "https://well.ca/products/elf-studio-tinted-moisturizer_93466.html?cat=580",
+            "matchedProductDescription": "Achieve even skin tone \nand naturally radiant skin with this moisturizing sheer tint of color.  \nThe smooth formula enhances your complexion with the nourishing key \ningredients Aloe, Cucumber and Vitamins A, C & E.Shades: \n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\tACTIVE: Benzophenone-3, Ethylhexyl Isopalmitate, Titanium Dioxide. \nINACTIVE: Water, Mineral Oil, Cyclomethicone, C12-15 Alkyl Benzoate, \nPropylene Glycol, Dimethicone, Steareth-21 Cetearyl Alcohol, \nCeteareth-2, Glyceryl Stearate, Xanthan Gum, Methylparaben, \nPropylparabem, Tocopherol(VE), Retinyl Acetate(VA), Ascorbyk \nPalmitate(VC), Aloe Barbadensis (Aloe Vera) Leaf Juice, Cucumis Sativus \n(Cucumber) Fruit Extract, MAY CONTAIN: Iron Oxides (CI 77491, CI 77492, \nCI 77499), Titanium Dioxide (CI 77891)\n\t\t\t\t\t\n\t\t\t\t",
+            "matchedProductColors": [
+              {
+                "hex_value": "#EFC698",
+                "colour_name": "Porecelain "
+              },
+              {
+                "hex_value": "#EBB579",
+                "colour_name": "Nude "
+              },
+              {
+                "hex_value": "#D99A67",
+                "colour_name": "Beige "
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "e.l.f. Studio Flawless Finish Foundation",
+                "brand": "e.l.f.",
+                "price": "9.99",
+                "score": {
+                  "overall": 0.57,
+                  "nameMatch": 0.91,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/322/original/data?1514063300",
+                "sourceId": "322",
+                "productUrl": "https://well.ca/products/elf-studio-flawless-finish_93427.html",
+                "description": "Achieve a flawless complexion with the silky smooth e.l.f. Studio \nFlawless Finish Foundation. The lightweight and oil-free formula blends \nin naturally for a beautiful semi-matte finish. This liquid foundation \napplies easily and lasts all day for visibly brighter and radiant \nlooking skin. Using e.l.f.'s Flawless Finish Foundation not only restores \nuneven skin textures and tones, but most importantly, the SPF 15 \nprotects your skin against harmful sun damage!Shade Range: \n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\tACTIVE INGREDIENTS:  Octyl Salicylate 2%,   Titanium Dioxide 5.5% INACTIVE INGREDIENTS:\n  Water (Aqua), Cyclopentasiloxane, Isododecane, Hydrogenated \nPolyisobutene, Cetyl PEG/PPG-10/1 Dimethicone, Polyglyceryl-4 \nIsostearate, Polymethyl Methacrylate, Sorbitan Sesquiisostearate, \nButylene Glycol, Talc, Dimethicone, Disteardimonium Hectorite, Magnesium\n Sulfate, Glycerin, Phenoxyethanol, Synthetic Beeswax, Potassium \nSorbate, Propylene Carbonate, Boron Nitride, Barium Sulfate, Caprylyl \nGlycol\nMay Contain: Iron Oxides (CI 77491, CI 77492, CI 77499)\n\n\t\t\t\t\t\n\t\t\t\t",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "e.l.f. Studio HD Mattifying Cream Foundation",
+                "brand": "e.l.f.",
+                "price": "9.99",
+                "score": {
+                  "overall": 0.57,
+                  "nameMatch": 0.89,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/378/original/data?1514063313",
+                "sourceId": "378",
+                "productUrl": "https://well.ca/products/elf-studio-hd-mattifying-cream_93392.html",
+                "description": "This high-definition, oil-free, lightweight foundation is perfect for \nnormal to oily skin types. The cream-to-powder formula minimizes fine \nlines and leaves a natural, long-lasting, matte finish. Includes a \ncompact sponge for easy application and portable beauty.Shade Range: Ingredients: Ethylhexl Palmitate, Octyldodecanol, Synthetic Wax, Copernicia Cerifera \n(Carnauba) Wax, Caprylic/Capric Triglyceride, Tridecyl Trimellitate, \nMica, Nylon-12, Silica, Triacontanyl PVP, Polyglyceryl-4 Isostearate, \nPropylparaben, Tocopheryl Acetate MAY CONTAIN: Iron Oxides (CI \n77491, CI 77492, CI 77499), Manganese Violet (CI 77492), Red No. 33 Lake\n (CI 17200), Blue No. 1(CI 42090), Yellow No. 5 Lake (CI 19140), \nTitanium Dioxide (CI 77891), Red No.40 Lake (CI 16035), Chromium \nHydroxide Green (CI 77289). ",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "L'Oreal Paris Visible Lift Blur Foundation ",
+                "brand": "l'oreal",
+                "price": "18.99",
+                "score": {
+                  "overall": 0.52,
+                  "nameMatch": 0.73,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/345/original/data?1514063305",
+                "sourceId": "345",
+                "productUrl": "https://well.ca/products/loreal-paris-visible-lift-blur_96664.html",
+                "description": "Discover instantly ageless skin. L'Oreal Paris Visible Lift Blur™ features Opti-Blur™ \ntechnology with a cushiony soft texture that glides on to blur the look \nof lines, wrinkles and uneven skin tone in seconds. Skin looks \nflawlessly smooth, instantly perfected.Ingredients: CYCLOPENTASILOXANE,\nAQUA, ETHYLHEXYL\nMETHOXYCINNAMATE,\nDIMETHICONE\nCROSSPOLYMER,\nGLYCERIN, ISOTRIDECYL\nISONONANOATE, PEG-9\nPOLYDIMETHYLSILOXYETHYL\nDIMETHICONE,\nDISTEARDIMONIUM\nHECTORITE,\nPHENOXYETHANOL,\nPEG-10 DIMETHICONE,\nHYDROLYZED WHEAT\nPROTEIN/PVP\nCROSSPOLYMER,\nDISODIUM STEAROYL\nGLUTAMATE,\nCHLORPHENESIN,\nMETHYLPARABEN,\nLYCIUM BARBARUM\nFRUIT EXTRACT,\nACRYLATES\nCOPOLYMER,\nPOTASSIUM SORBATE,\nETHYLPARABEN,\nTOCOPHEROL,\nASCORBYL PALMITATE,\nPANTHENOL, PEG-9,\nALUMINUM HYDROXIDE,\nCITRIC ACID, SODIUM\nPCA, UREA, TREHALOSE,\nPOLYQUATERNIUM-51,\nSOLUBLE COLLAGEN,\nSODIUM HYALURONATE.\n[+/- : CI 77891, MICA,\nCI 77492, CI 77491,\nCI 77499]\n\n\n",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              }
+            ],
+            "matchScore": {
+              "overall": 0.59,
+              "nameMatch": 0.95,
+              "typeMatch": 1,
+              "brandMatch": 0
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:19:23.815Z"
+          },
+          "detectedScore": 0.74,
+          "catalogMatch": null,
+          "catalogScore": 0
+        },
+        {
+          "expected": {
+            "name": "Flawless Fusion Concealer",
+            "brand": "Laura Mercier",
+            "type": "concealer",
+            "required": true,
+            "mustMatchCatalog": false
+          },
+          "detectedMatch": null,
+          "detectedScore": 0.47,
+          "catalogMatch": null,
+          "catalogScore": 0
+        },
+        {
+          "expected": {
+            "name": "24-HR Brow Setter",
+            "brand": "Benefit",
+            "type": "brow",
+            "required": false,
+            "mustMatchCatalog": false
+          },
+          "detectedMatch": null,
+          "detectedScore": 0.23,
+          "catalogMatch": null,
+          "catalogScore": 0
+        },
+        {
+          "expected": {
+            "name": "Blush in Frisky Business",
+            "brand": "ColourPop",
+            "type": "blush",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": null,
+          "detectedScore": 0,
+          "catalogMatch": null,
+          "catalogScore": 0
+        }
+      ]
+    },
+    {
+      "id": "search-puspita-nyx-soft-glam",
+      "url": "https://www.youtube.com/watch?v=upz61aYWhHM",
+      "status": "completed",
+      "analysisId": 33,
+      "expectedCount": 4,
+      "detectedCount": 10,
+      "presentedCount": 10,
+      "exactCount": 7,
+      "candidateCount": 3,
+      "hiddenCount": 0,
+      "presentedMatchedCount": 3,
+      "exactMatchedCount": 1,
+      "catalogMatchedCount": 1,
+      "durationMs": 64679,
+      "expectedProducts": [
+        {
+          "expected": {
+            "name": "Angel Veil Skin Perfecting Primer",
+            "brand": "NYX",
+            "type": "primer",
+            "required": true,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": {
+            "id": 173,
+            "videoAnalysisId": 33,
+            "aiDetectedName": "NYX Angel Veil Skin Perfecting Primer",
+            "aiDetectedBrand": "NYX",
+            "aiDetectedType": "primer",
+            "aiDetectedColor": null,
+            "aiDetectedDescription": "Used as a primer to create a smooth base for makeup",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Mentions starting with NYX Angel Veil Skin Perfecting Primer",
+              "visual": "Frame 2 shows the hand holding the tube with the name clearly visible",
+              "metadata": "Mentioned in video metadata under FACE section"
+            },
+            "normalizedBrandSlug": "nyx",
+            "normalizedCategoryKey": "primer",
+            "normalizedNameTokens": [
+              "nyx",
+              "angel",
+              "veil",
+              "skin",
+              "perfecting",
+              "primer"
+            ],
+            "matchedProductId": null,
+            "matchedProductSource": null,
+            "matchedProductSourceId": null,
+            "matchedProductMarketplace": null,
+            "matchedProductName": null,
+            "matchedProductBrand": null,
+            "matchedProductImage": null,
+            "matchedProductPrice": null,
+            "matchedProductType": null,
+            "matchedProductUrl": null,
+            "matchedProductDescription": null,
+            "matchedProductColors": null,
+            "matchedProductAlternatives": null,
+            "matchScore": null,
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:20:22.785Z"
+          },
+          "detectedScore": 0.89,
+          "catalogMatch": null,
+          "catalogScore": 0.25
+        },
+        {
+          "expected": {
+            "name": "Total Control Drop Foundation",
+            "brand": "NYX",
+            "type": "foundation",
+            "required": true,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": {
+            "id": 180,
+            "videoAnalysisId": 33,
+            "aiDetectedName": "NYX Total Control Drop Foundation",
+            "aiDetectedBrand": "NYX",
+            "aiDetectedType": "foundation",
+            "aiDetectedColor": "No. 09",
+            "aiDetectedDescription": "Liquid foundation applied with dropper; shade No. 09 used",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Mentions NYX Total Control Drop Foundation in shade number 9",
+              "visual": "Frames 3 and 4 show the dropper bottle with label and shade visible",
+              "metadata": "Listed in FACE products in video metadata"
+            },
+            "normalizedBrandSlug": "nyx",
+            "normalizedCategoryKey": "foundation",
+            "normalizedNameTokens": [
+              "nyx",
+              "total",
+              "control",
+              "drop",
+              "foundation"
+            ],
+            "matchedProductId": 894,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "894",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "Total Control Drop Foundation",
+            "matchedProductBrand": "nyx",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/894/original/data?1514082575",
+            "matchedProductPrice": "14",
+            "matchedProductType": "foundation",
+            "matchedProductUrl": "https://www.nyxcosmetics.com/total-control-drop-foundation/NYX_413.html?cgid=foundation",
+            "matchedProductDescription": null,
+            "matchedProductColors": [
+              {
+                "hex_value": "#F5DBC0",
+                "colour_name": "Pale"
+              },
+              {
+                "hex_value": "#EBCCB0",
+                "colour_name": "Alabaster"
+              },
+              {
+                "hex_value": "#E2C2A9",
+                "colour_name": "Porcelain"
+              },
+              {
+                "hex_value": "#EEC5A9",
+                "colour_name": "Light Ivory"
+              },
+              {
+                "hex_value": "#E7BDA7",
+                "colour_name": "Light"
+              },
+              {
+                "hex_value": "#E6C1A4",
+                "colour_name": "Vanilla"
+              },
+              {
+                "hex_value": "#C7A987",
+                "colour_name": "Nude"
+              },
+              {
+                "hex_value": "#DEB08C",
+                "colour_name": "Natural"
+              },
+              {
+                "hex_value": "#C69A7D",
+                "colour_name": "Soft Beige"
+              },
+              {
+                "hex_value": "#DCB083",
+                "colour_name": "True Beige"
+              },
+              {
+                "hex_value": "#D1A683",
+                "colour_name": "Medium Olive"
+              },
+              {
+                "hex_value": "#CBA07D",
+                "colour_name": "Buff"
+              },
+              {
+                "hex_value": "#C89F73",
+                "colour_name": "Beige"
+              },
+              {
+                "hex_value": "#C6956A",
+                "colour_name": "Classic Tan"
+              },
+              {
+                "hex_value": "#BB8E71",
+                "colour_name": "Camel"
+              },
+              {
+                "hex_value": "#C59263",
+                "colour_name": "Golden"
+              },
+              {
+                "hex_value": "#BD8856",
+                "colour_name": "Golden Honey"
+              },
+              {
+                "hex_value": "#BE8D55",
+                "colour_name": "Caramel"
+              },
+              {
+                "hex_value": "#B28566",
+                "colour_name": "Cinnamon"
+              },
+              {
+                "hex_value": "#B17B4D",
+                "colour_name": "Mahogany"
+              },
+              {
+                "hex_value": "#A37A5A",
+                "colour_name": "Nutmeg"
+              },
+              {
+                "hex_value": "#A97647",
+                "colour_name": "Cappuccino"
+              },
+              {
+                "hex_value": "#9C7151",
+                "colour_name": "Sienna"
+              },
+              {
+                "hex_value": "#9D6E40",
+                "colour_name": "Deep Sable"
+              },
+              {
+                "hex_value": "#96663E",
+                "colour_name": "Mocha"
+              },
+              {
+                "hex_value": "#935F38",
+                "colour_name": "Deep Rich"
+              },
+              {
+                "hex_value": "#895837",
+                "colour_name": "Cocoa"
+              },
+              {
+                "hex_value": "#915732",
+                "colour_name": "Deep Cool"
+              },
+              {
+                "hex_value": "#7F4D2C",
+                "colour_name": "Chestnut"
+              },
+              {
+                "hex_value": "#6F4326",
+                "colour_name": "Deep Espresso"
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "NYX Mineral Stick Foundation",
+                "brand": "nyx",
+                "price": "11.99",
+                "score": {
+                  "overall": 0.83,
+                  "nameMatch": 0.43,
+                  "typeMatch": 1,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/373/original/open-uri20171223-4-13g3uut?1514063311",
+                "sourceId": "373",
+                "productUrl": "https://well.ca/products/nyx-mineral-stick-foundation_105944.html",
+                "description": "NYX Mineral Stick Foundation is a luxurious formula that is easy to apply and blend. Use on the entire face or isolated areas that need a little extra attention. Can be blended with fingertips, sponge or foundation brush.Features:Creamy stick foundation that gives a matte satin finishGlides on effortlessly providing medium to full coverage with a natural finishYou can wear as little or as much as you want to get the desired coverage Easy to blend and comfortable to wear at the same timeHow to Use: Apply directly to face from stick or apply using fingers, sponge or brush. Layer and blend for desired result. Set with powder.",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              }
+            ],
+            "matchScore": {
+              "overall": 1,
+              "nameMatch": 1,
+              "typeMatch": 1,
+              "brandMatch": 1
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:20:22.886Z"
+          },
+          "detectedScore": 1,
+          "catalogMatch": {
+            "id": 180,
+            "videoAnalysisId": 33,
+            "aiDetectedName": "NYX Total Control Drop Foundation",
+            "aiDetectedBrand": "NYX",
+            "aiDetectedType": "foundation",
+            "aiDetectedColor": "No. 09",
+            "aiDetectedDescription": "Liquid foundation applied with dropper; shade No. 09 used",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Mentions NYX Total Control Drop Foundation in shade number 9",
+              "visual": "Frames 3 and 4 show the dropper bottle with label and shade visible",
+              "metadata": "Listed in FACE products in video metadata"
+            },
+            "normalizedBrandSlug": "nyx",
+            "normalizedCategoryKey": "foundation",
+            "normalizedNameTokens": [
+              "nyx",
+              "total",
+              "control",
+              "drop",
+              "foundation"
+            ],
+            "matchedProductId": 894,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "894",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "Total Control Drop Foundation",
+            "matchedProductBrand": "nyx",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/894/original/data?1514082575",
+            "matchedProductPrice": "14",
+            "matchedProductType": "foundation",
+            "matchedProductUrl": "https://www.nyxcosmetics.com/total-control-drop-foundation/NYX_413.html?cgid=foundation",
+            "matchedProductDescription": null,
+            "matchedProductColors": [
+              {
+                "hex_value": "#F5DBC0",
+                "colour_name": "Pale"
+              },
+              {
+                "hex_value": "#EBCCB0",
+                "colour_name": "Alabaster"
+              },
+              {
+                "hex_value": "#E2C2A9",
+                "colour_name": "Porcelain"
+              },
+              {
+                "hex_value": "#EEC5A9",
+                "colour_name": "Light Ivory"
+              },
+              {
+                "hex_value": "#E7BDA7",
+                "colour_name": "Light"
+              },
+              {
+                "hex_value": "#E6C1A4",
+                "colour_name": "Vanilla"
+              },
+              {
+                "hex_value": "#C7A987",
+                "colour_name": "Nude"
+              },
+              {
+                "hex_value": "#DEB08C",
+                "colour_name": "Natural"
+              },
+              {
+                "hex_value": "#C69A7D",
+                "colour_name": "Soft Beige"
+              },
+              {
+                "hex_value": "#DCB083",
+                "colour_name": "True Beige"
+              },
+              {
+                "hex_value": "#D1A683",
+                "colour_name": "Medium Olive"
+              },
+              {
+                "hex_value": "#CBA07D",
+                "colour_name": "Buff"
+              },
+              {
+                "hex_value": "#C89F73",
+                "colour_name": "Beige"
+              },
+              {
+                "hex_value": "#C6956A",
+                "colour_name": "Classic Tan"
+              },
+              {
+                "hex_value": "#BB8E71",
+                "colour_name": "Camel"
+              },
+              {
+                "hex_value": "#C59263",
+                "colour_name": "Golden"
+              },
+              {
+                "hex_value": "#BD8856",
+                "colour_name": "Golden Honey"
+              },
+              {
+                "hex_value": "#BE8D55",
+                "colour_name": "Caramel"
+              },
+              {
+                "hex_value": "#B28566",
+                "colour_name": "Cinnamon"
+              },
+              {
+                "hex_value": "#B17B4D",
+                "colour_name": "Mahogany"
+              },
+              {
+                "hex_value": "#A37A5A",
+                "colour_name": "Nutmeg"
+              },
+              {
+                "hex_value": "#A97647",
+                "colour_name": "Cappuccino"
+              },
+              {
+                "hex_value": "#9C7151",
+                "colour_name": "Sienna"
+              },
+              {
+                "hex_value": "#9D6E40",
+                "colour_name": "Deep Sable"
+              },
+              {
+                "hex_value": "#96663E",
+                "colour_name": "Mocha"
+              },
+              {
+                "hex_value": "#935F38",
+                "colour_name": "Deep Rich"
+              },
+              {
+                "hex_value": "#895837",
+                "colour_name": "Cocoa"
+              },
+              {
+                "hex_value": "#915732",
+                "colour_name": "Deep Cool"
+              },
+              {
+                "hex_value": "#7F4D2C",
+                "colour_name": "Chestnut"
+              },
+              {
+                "hex_value": "#6F4326",
+                "colour_name": "Deep Espresso"
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "NYX Mineral Stick Foundation",
+                "brand": "nyx",
+                "price": "11.99",
+                "score": {
+                  "overall": 0.83,
+                  "nameMatch": 0.43,
+                  "typeMatch": 1,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/373/original/open-uri20171223-4-13g3uut?1514063311",
+                "sourceId": "373",
+                "productUrl": "https://well.ca/products/nyx-mineral-stick-foundation_105944.html",
+                "description": "NYX Mineral Stick Foundation is a luxurious formula that is easy to apply and blend. Use on the entire face or isolated areas that need a little extra attention. Can be blended with fingertips, sponge or foundation brush.Features:Creamy stick foundation that gives a matte satin finishGlides on effortlessly providing medium to full coverage with a natural finishYou can wear as little or as much as you want to get the desired coverage Easy to blend and comfortable to wear at the same timeHow to Use: Apply directly to face from stick or apply using fingers, sponge or brush. Layer and blend for desired result. Set with powder.",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              }
+            ],
+            "matchScore": {
+              "overall": 1,
+              "nameMatch": 1,
+              "typeMatch": 1,
+              "brandMatch": 1
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:20:22.886Z"
+          },
+          "catalogScore": 1
+        },
+        {
+          "expected": {
+            "name": "Highlight and Contour Pro Palette",
+            "brand": "NYX",
+            "type": "contour",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": {
+            "id": 176,
+            "videoAnalysisId": 33,
+            "aiDetectedName": "NYX Highlight and Contour Pro Palette",
+            "aiDetectedBrand": "NYX",
+            "aiDetectedType": "contour",
+            "aiDetectedColor": null,
+            "aiDetectedDescription": "Used for contouring the face and nose using several shades",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Mentions NYX Highlight and Contour Pro Palette to sculpt face",
+              "visual": "Frame 8 shows the palette with NYX logo clearly visible",
+              "metadata": "Listed in FACE products"
+            },
+            "normalizedBrandSlug": "nyx",
+            "normalizedCategoryKey": "contour",
+            "normalizedNameTokens": [
+              "nyx",
+              "highlight",
+              "contour",
+              "pro",
+              "palette"
+            ],
+            "matchedProductId": 977,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "977",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "Sculpt & Highlight Brow Contour",
+            "matchedProductBrand": "nyx",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/977/original/open-uri20171224-4-ylht42?1514082762",
+            "matchedProductPrice": "10",
+            "matchedProductType": "eyebrow",
+            "matchedProductUrl": "https://www.nyxcosmetics.com/sculpt-and-highlight-brow-contour/NYX_322.html?cgid=brows",
+            "matchedProductDescription": "Nothing pulls together a look quite like beautifully defined brows. Enter the sleek new Sculpt & Highlight Brow Contour, our 2-in-1 pencil that defines, fills and uses shadow and light to lift the brows to eyebrow perfection.",
+            "matchedProductColors": [
+              {
+                "hex_value": "#FFF6E3",
+                "colour_name": "Blonde/Ivory"
+              },
+              {
+                "hex_value": "#FFF8E6",
+                "colour_name": "Taupe/Vanilla"
+              },
+              {
+                "hex_value": "#FFF3E9",
+                "colour_name": "Soft Brown/Rose"
+              },
+              {
+                "hex_value": "#FFF5E8",
+                "colour_name": "Auburn/Soft Pink"
+              },
+              {
+                "hex_value": "#FFF2DF",
+                "colour_name": "Brunette/Cream"
+              },
+              {
+                "hex_value": "#FFF5E2",
+                "colour_name": "Espresso/Light Beige"
+              },
+              {
+                "hex_value": "#FEF1DE",
+                "colour_name": "Ash Brown/Medium Beige"
+              },
+              {
+                "hex_value": "#FFF1E7",
+                "colour_name": "Black/Golden Peach"
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "Cheek Contour Duo Palette",
+                "brand": "nyx",
+                "price": "9",
+                "score": {
+                  "overall": 0.53,
+                  "nameMatch": 0.43,
+                  "typeMatch": 0,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/923/original/open-uri20171224-4-13zuxu4?1514082646",
+                "sourceId": "923",
+                "productUrl": "https://www.nyxcosmetics.com/cheek-contour-duo-palette/NYX_309.html?cgid=blush",
+                "description": "Create natural-looking contours, sun-kissed cheeks and a gorgeous, lit-from-within glow with our new Cheek Contour Duos. Available in six silky shade combinations, each luxurious compact makes it easy to perfect your complexion on the go.",
+                "marketplace": "Makeup API",
+                "productType": "blush"
+              },
+              {
+                "name": "Conceal, Correct, Contour Palette",
+                "brand": "nyx",
+                "price": "12",
+                "score": {
+                  "overall": 0.53,
+                  "nameMatch": 0.43,
+                  "typeMatch": 0,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/911/original/open-uri20171224-4-lx4vmq?1514082615",
+                "sourceId": "911",
+                "productUrl": "https://www.nyxcosmetics.com/conceal-correct-contour-palette/NYX_170.html?cgid=concealer",
+                "description": "Color-match your skin using our perfecting and correcting palettes to conceal, correct, or contour. With six shades to choose from in each set you can cover up problem spots even out imperfections and accentuate your best features in a flash. Use these buildable colors on their own or combine them to create the ideal tone.",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "NYX High Definition Blush",
+                "brand": "nyx",
+                "price": "7.99",
+                "score": {
+                  "overall": 0.53,
+                  "nameMatch": 0.43,
+                  "typeMatch": 0,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/463/original/data?1514063326",
+                "sourceId": "463",
+                "productUrl": "https://well.ca/products/nyx-high-definition-blush_118146.html",
+                "description": "This NYX High Definition Blush is a high definition lightweight blush that blends evenly.  This vibrant and silky blush delivers a beautiful flush of colour and is paraben free. ",
+                "marketplace": "Makeup API",
+                "productType": "blush"
+              }
+            ],
+            "matchScore": {
+              "overall": 0.53,
+              "nameMatch": 0.43,
+              "typeMatch": 0,
+              "brandMatch": 1
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:20:22.882Z"
+          },
+          "detectedScore": 0.89,
+          "catalogMatch": null,
+          "catalogScore": 0.46
+        },
+        {
+          "expected": {
+            "name": "Liquid Suede Soft Spoken",
+            "brand": "NYX",
+            "type": "lipstick",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": null,
+          "detectedScore": 0.36,
+          "catalogMatch": null,
+          "catalogScore": 0.25
+        }
+      ]
+    },
+    {
+      "id": "search-fromheadtotoe-drugstore-fall",
+      "url": "https://www.youtube.com/watch?v=-v5XOMRb7tc",
+      "status": "completed",
+      "analysisId": 34,
+      "expectedCount": 4,
+      "detectedCount": 7,
+      "presentedCount": 7,
+      "exactCount": 1,
+      "candidateCount": 6,
+      "hiddenCount": 0,
+      "presentedMatchedCount": 2,
+      "exactMatchedCount": 1,
+      "catalogMatchedCount": 0,
+      "durationMs": 103284,
+      "expectedProducts": [
+        {
+          "expected": {
+            "name": "Healthy Skin Foundation",
+            "brand": "Neutrogena",
+            "type": "foundation",
+            "required": true,
+            "mustMatchCatalog": false
+          },
+          "detectedMatch": {
+            "id": 183,
+            "videoAnalysisId": 34,
+            "aiDetectedName": "Neutrogena Healthy Skin Foundation",
+            "aiDetectedBrand": "Neutrogena",
+            "aiDetectedType": "foundation",
+            "aiDetectedColor": "60 Natural Beige",
+            "aiDetectedDescription": "A lighter coverage foundation used all over the face with layering on spots needing extra coverage",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Mentions starting with Neutrogena Healthy Skin Foundation in number 60 Natural Beige",
+              "visual": null,
+              "metadata": "Mentioned in product list and transcript as used first"
+            },
+            "normalizedBrandSlug": "neutrogena",
+            "normalizedCategoryKey": "foundation",
+            "normalizedNameTokens": [
+              "neutrogena",
+              "healthy",
+              "skin",
+              "foundation"
+            ],
+            "matchedProductId": 315,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "315",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "e.l.f. Studio Tinted Moisturizer",
+            "matchedProductBrand": "e.l.f.",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/315/original/data?1514063300",
+            "matchedProductPrice": "4.99",
+            "matchedProductType": "foundation",
+            "matchedProductUrl": "https://well.ca/products/elf-studio-tinted-moisturizer_93466.html?cat=580",
+            "matchedProductDescription": "Achieve even skin tone \nand naturally radiant skin with this moisturizing sheer tint of color.  \nThe smooth formula enhances your complexion with the nourishing key \ningredients Aloe, Cucumber and Vitamins A, C & E.Shades: \n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\tACTIVE: Benzophenone-3, Ethylhexyl Isopalmitate, Titanium Dioxide. \nINACTIVE: Water, Mineral Oil, Cyclomethicone, C12-15 Alkyl Benzoate, \nPropylene Glycol, Dimethicone, Steareth-21 Cetearyl Alcohol, \nCeteareth-2, Glyceryl Stearate, Xanthan Gum, Methylparaben, \nPropylparabem, Tocopherol(VE), Retinyl Acetate(VA), Ascorbyk \nPalmitate(VC), Aloe Barbadensis (Aloe Vera) Leaf Juice, Cucumis Sativus \n(Cucumber) Fruit Extract, MAY CONTAIN: Iron Oxides (CI 77491, CI 77492, \nCI 77499), Titanium Dioxide (CI 77891)\n\t\t\t\t\t\n\t\t\t\t",
+            "matchedProductColors": [
+              {
+                "hex_value": "#EFC698",
+                "colour_name": "Porecelain "
+              },
+              {
+                "hex_value": "#EBB579",
+                "colour_name": "Nude "
+              },
+              {
+                "hex_value": "#D99A67",
+                "colour_name": "Beige "
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "e.l.f. Studio Flawless Finish Foundation",
+                "brand": "e.l.f.",
+                "price": "9.99",
+                "score": {
+                  "overall": 0.5,
+                  "nameMatch": 0.65,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/322/original/data?1514063300",
+                "sourceId": "322",
+                "productUrl": "https://well.ca/products/elf-studio-flawless-finish_93427.html",
+                "description": "Achieve a flawless complexion with the silky smooth e.l.f. Studio \nFlawless Finish Foundation. The lightweight and oil-free formula blends \nin naturally for a beautiful semi-matte finish. This liquid foundation \napplies easily and lasts all day for visibly brighter and radiant \nlooking skin. Using e.l.f.'s Flawless Finish Foundation not only restores \nuneven skin textures and tones, but most importantly, the SPF 15 \nprotects your skin against harmful sun damage!Shade Range: \n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\tACTIVE INGREDIENTS:  Octyl Salicylate 2%,   Titanium Dioxide 5.5% INACTIVE INGREDIENTS:\n  Water (Aqua), Cyclopentasiloxane, Isododecane, Hydrogenated \nPolyisobutene, Cetyl PEG/PPG-10/1 Dimethicone, Polyglyceryl-4 \nIsostearate, Polymethyl Methacrylate, Sorbitan Sesquiisostearate, \nButylene Glycol, Talc, Dimethicone, Disteardimonium Hectorite, Magnesium\n Sulfate, Glycerin, Phenoxyethanol, Synthetic Beeswax, Potassium \nSorbate, Propylene Carbonate, Boron Nitride, Barium Sulfate, Caprylyl \nGlycol\nMay Contain: Iron Oxides (CI 77491, CI 77492, CI 77499)\n\n\t\t\t\t\t\n\t\t\t\t",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "e.l.f. Studio HD Mattifying Cream Foundation",
+                "brand": "e.l.f.",
+                "price": "9.99",
+                "score": {
+                  "overall": 0.49,
+                  "nameMatch": 0.64,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/378/original/data?1514063313",
+                "sourceId": "378",
+                "productUrl": "https://well.ca/products/elf-studio-hd-mattifying-cream_93392.html",
+                "description": "This high-definition, oil-free, lightweight foundation is perfect for \nnormal to oily skin types. The cream-to-powder formula minimizes fine \nlines and leaves a natural, long-lasting, matte finish. Includes a \ncompact sponge for easy application and portable beauty.Shade Range: Ingredients: Ethylhexl Palmitate, Octyldodecanol, Synthetic Wax, Copernicia Cerifera \n(Carnauba) Wax, Caprylic/Capric Triglyceride, Tridecyl Trimellitate, \nMica, Nylon-12, Silica, Triacontanyl PVP, Polyglyceryl-4 Isostearate, \nPropylparaben, Tocopheryl Acetate MAY CONTAIN: Iron Oxides (CI \n77491, CI 77492, CI 77499), Manganese Violet (CI 77492), Red No. 33 Lake\n (CI 17200), Blue No. 1(CI 42090), Yellow No. 5 Lake (CI 19140), \nTitanium Dioxide (CI 77891), Red No.40 Lake (CI 16035), Chromium \nHydroxide Green (CI 77289). ",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "Annabelle SkinTrue Foundation",
+                "brand": "annabelle",
+                "price": "10.99",
+                "score": {
+                  "overall": 0.47,
+                  "nameMatch": 0.55,
+                  "typeMatch": 1,
+                  "brandMatch": 0
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/332/original/open-uri20171223-4-1uhm6nz?1514063295",
+                "sourceId": "332",
+                "productUrl": "https://well.ca/products/annabelle-skintrue-foundation_97867.html",
+                "description": "\n        Truly flawless, natural-looking skin is what you can expect \nfrom Annabelle SkinTrue Foundation. Its oil-Free, soft and matte finish makes you feel\n like you're wearing nothing at all, just beautiful skin. It blends \neasily to even out the skin tone yet feels extremely light and natural. \nOil-Free. Shade Range: ",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              }
+            ],
+            "matchScore": {
+              "overall": 0.5,
+              "nameMatch": 0.68,
+              "typeMatch": 1,
+              "brandMatch": 0
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:22:13.932Z"
+          },
+          "detectedScore": 0.84,
+          "catalogMatch": null,
+          "catalogScore": 0
+        },
+        {
+          "expected": {
+            "name": "Mineral Wear Powder",
+            "brand": "Physicians Formula",
+            "type": "powder",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": {
+            "id": 186,
+            "videoAnalysisId": 34,
+            "aiDetectedName": "Physicians Formula Mineral Wear Powder",
+            "aiDetectedBrand": "Physicians Formula",
+            "aiDetectedType": "powder",
+            "aiDetectedColor": "Beige",
+            "aiDetectedDescription": "Powder to set foundation, in Beige",
+            "aiConfidence": "1",
+            "aiEvidence": {
+              "audio": "Used to set foundation, called Physicians Formula Mineral Wear Powder in Beige",
+              "visual": null,
+              "metadata": "Product listed in metadata as used"
+            },
+            "normalizedBrandSlug": "physicians_formula",
+            "normalizedCategoryKey": "powder",
+            "normalizedNameTokens": [
+              "physicians",
+              "formula",
+              "mineral",
+              "wear",
+              "powder"
+            ],
+            "matchedProductId": 368,
+            "matchedProductSource": "makeup_api",
+            "matchedProductSourceId": "368",
+            "matchedProductMarketplace": "Makeup API",
+            "matchedProductName": "Physicians Formula Mineral Wear Airbrushing Pressed Powder ",
+            "matchedProductBrand": "physicians formula",
+            "matchedProductImage": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/368/original/open-uri20171223-4-1g1823t?1514063309",
+            "matchedProductPrice": "19.99",
+            "matchedProductType": "foundation",
+            "matchedProductUrl": "https://well.ca/products/physicians-formula-mineral-wear_58593.html?cat=582",
+            "matchedProductDescription": "Physicians Formula Mineral Wear Airbrushing Pressed Powder's ultra-fine mineral powder delivers impeccable coverage for a flawless airbrushed finish. Visibly reduces the appearance of fine lines, wrinkles, pores and sun damage.Directions for Use: Apply liberally 15 minutes before sun exposure.  Use water resistant \nsunscreen if swimming or sweating.  Reapply at least every 2 hours.  \nChildren under 6 months: Ask a doctor.  Sun Protection Measures.  \nSpending time in the sun increases your risk of skin cancer and early \nskin aging.  To decrease this risk, regularly use a sunscreen with a \nbroad spectrum SPF of 15 or higher and other sun protection measures \nincluding: limit time in the sun, especially 10 a.m. - 2 p.m. Wear \nlong-sleeve shirts, pants, hats, and sunglasses.Ingredients: Titanium Dioxide, Zinc Oxide. Inactive Ingredients: Mica, Zinc Stearate,\n Tricaprylin, Boron Nitride, Lauroyl Lysine, Camellia Oleifera Leaf \nExtract, Chamomilla Recutita (Matricaria) Flower Extract, Ginkgo Biloba \nLeaf Extract, Panax Ginseng Root Extract, Carthamus Tinctorius \n(Safflower) Seed Oil, Tocopheryl Acetate, Retinyl Palmitate, Ascorbyl \nPalmitate, Magnesium Silicate, Chlorphenesin, Potassium Sorbate, Sodium \nDehydroacetate, May Contain: Iron Oxides, Titanium Dioxide.Hypoallergenic. Fragrance free. Paraben free. Non-Comedogenic. Dermatologist approved. ",
+            "matchedProductColors": [
+              {
+                "hex_value": "#ffffee",
+                "colour_name": "Translucent (7586C) "
+              },
+              {
+                "hex_value": "#ecc9a3",
+                "colour_name": "Creamy Natural (7587C) "
+              }
+            ],
+            "matchedProductAlternatives": [
+              {
+                "name": "Physicians Formula Mineral Wear Airbrushing Loose Powder ",
+                "brand": "physicians formula",
+                "price": "14.99",
+                "score": {
+                  "overall": 0.97,
+                  "nameMatch": 0.91,
+                  "typeMatch": 1,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/365/original/open-uri20171223-4-15ax46q?1514063309",
+                "sourceId": "365",
+                "productUrl": "https://well.ca/products/physicians-formula-mineral-wear_58573.html?cat=582",
+                "description": "Physicians Formula Talc-Free Mineral Wear Airbrushing Loose Powder is an ultra-fine mineral powder delivers impeccable coverage for a flawless airbrushed finish. Visibly reduces the appearance of fine lines, wrinkles, pores and sun damage. Formulated with soothing plant extracts, protective antioxidants, nourishing Vitamins C and E. The result is a visibly firm, smooth, healthy and youthful complexion.Directions for Use: May be worn alone or over makeup. Invert jar and gently tap to allow \npowder to gather in tray. Open the sifter lid and lightly buff powder \nover face and neck to even out complexion. For the most even \napplication, be sure to tap excess powder from brush before applying.  \nFor best results on dry to very dry skin, apply moisturizer prior to \nusing powder.Ingredients: Mica. Boron Nitride. Zinc Stearate. Lauroyl Lysine.  Tricaprylin. \nMagnesium Silicate. Carthamus Tinctorius (Safflower) Seed Oil. \nChamomilla Recutita (Matricaria) Flower Extract. Panax Ginseng Root \nExtract. Ginkgo Biloba Leaf Extract. Camellia Oleifera Leaf Extract. \nAscorbyl Palmitate. Tocopheryl Acetate. Retinyl Palmitate. \nChlorphenesin. Potassium Sorbate. Sodium Dehydroacetate. May Contain: \nIron Oxides. Titanium Dioxide.Hypoallergenic. Fragrance free. Paraben free. Dermatologist approved. Non-Comedogenic.",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "Physicians Formula Mineral Wear Correcting Kit ",
+                "brand": "physicians formula",
+                "price": "29.99",
+                "score": {
+                  "overall": 0.93,
+                  "nameMatch": 0.76,
+                  "typeMatch": 1,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/369/original/open-uri20171223-4-1dnyc8c?1514063310",
+                "sourceId": "369",
+                "productUrl": "https://well.ca/products/physicians-formula-mineral-wear_58609.html?cat=582",
+                "description": "Physicians Formula Mineral Wear Flawless Complexion Kit is ideal for \nextra sensitive or breakout-prone skin! The ultra-gentle, minimalist \nformulations help reduce irritation and breakout.Kit Includes: Mineral Wear Talc-Free Mineral Correcting Concealer (11.6 g) - Cover + HighlightMineral Wear Talc-Free Mineral Correcting Powder \t\t\t\t(8.2 g)Mineral Wear Talc-Free Mineral Loose Powder (10 g) ",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              },
+              {
+                "name": "Physicians Formula Nude Wear Touch of Glow Stick in Nude Glow",
+                "brand": "physicians formula",
+                "price": "12.99",
+                "score": {
+                  "overall": 0.9,
+                  "nameMatch": 0.67,
+                  "typeMatch": 1,
+                  "brandMatch": 1
+                },
+                "source": "makeup_api",
+                "imageUrl": "https://s3.amazonaws.com/donovanbailey/products/api_featured_images/000/000/387/original/data?1514063316",
+                "sourceId": "387",
+                "productUrl": "https://well.ca/products/physicians-formula-nude-wear-touch_102685.html",
+                "description": "\nPhysicians Formula Nude Wear Touch of Glow Stick is an all-around concealer, foundation, and highlighter touch up tool. The lightweight, glide on formula helps erase the appearance of imperfections and restore the glow of natural, naked skin.Features: Vanishes dark circles, fine lines, shadows and signs of fatigueHypoallergenicGluten, Fragrance, Paraben & Oil freeDermatologist approvedDirections: Apply all over face or to any imperfection and gently blend with fingertip to even out skin tone.Ingredients: Phenyl Trimethicone, Dimethicone, Caprylic/Capric Triglyceride, Isocetyl Stearate, Euphorbia Cerifera (Candelilla) Wax/Cire de Candelilla, Mica, Microcrystalline Wax/Cire Microcristalline, Ceryl Ethylhexanoate, Polymethylsilsesquioxane, Butryospermum Parkii (Shea) Butter, Copernicia Cerifera (Carnauba) Wax/Cire de Carnauba, Synthetic Beeswax, Ethylhexyl Palmitate, Calcium Aluminum Borosilicate, Phenoxyethanol, Lactic Acid, Nylon-12, HDI/Trimethylol Hexyllactone Crosspolymer, Lauroyl Lysine, Synthetic Fluorphlogopite, Boron Nitride, Silica, Arachidyl Alcohol, Cetyl PEG/PPG-10/1 Dimethicone, Hexyl Laurate, Ozokerite, Palmitic Acid, Polyglyceryl-2 Isostearate, Stearic Acid, BHT, Ascorbyl Palmitate, Tetrahexyldecyl Ascorbate,  Tocopherol Acetate. May Contain/Peut Contenir: Iron Oxides, Titanium Dioxide.",
+                "marketplace": "Makeup API",
+                "productType": "foundation"
+              }
+            ],
+            "matchScore": {
+              "overall": 0.97,
+              "nameMatch": 0.91,
+              "typeMatch": 1,
+              "brandMatch": 1
+            },
+            "reviewStatus": "unreviewed",
+            "adminNote": null,
+            "recommendedShade": null,
+            "timestamp": null,
+            "createdAt": "2026-03-10T13:22:14.028Z"
+          },
+          "detectedScore": 0.74,
+          "catalogMatch": null,
+          "catalogScore": 0.57
+        },
+        {
+          "expected": {
+            "name": "Black Label Lipstick in Diva",
+            "brand": "NYX",
+            "type": "lipstick",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": null,
+          "detectedScore": 0.25,
+          "catalogMatch": null,
+          "catalogScore": 0.25
+        },
+        {
+          "expected": {
+            "name": "Blush in Luminous",
+            "brand": "Milani",
+            "type": "blush",
+            "required": false,
+            "mustMatchCatalog": true
+          },
+          "detectedMatch": null,
+          "detectedScore": 0,
+          "catalogMatch": null,
+          "catalogScore": 0
+        }
+      ]
+    }
+  ]
+}

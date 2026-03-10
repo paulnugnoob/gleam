@@ -51,6 +51,7 @@ interface CaseResult {
   presentedMatchedCount: number;
   exactMatchedCount: number;
   catalogMatchedCount: number;
+  durationMs?: number;
   expectedProducts: ProductEvaluation[];
 }
 
@@ -196,7 +197,7 @@ function toPercent(numerator: number, denominator: number): number {
 
 function buildMarkdownReport(
   dataset: EvaluationDataset,
-  summary: Record<string, number | string>,
+  summary: Record<string, number | string | boolean>,
   caseResults: CaseResult[],
 ): string {
   const lines: string[] = [];
@@ -207,6 +208,12 @@ function buildMarkdownReport(
     lines.push("");
   }
   lines.push(`Generated: ${new Date().toISOString()}`);
+  lines.push("");
+  lines.push("## Run Config");
+  lines.push("");
+  lines.push(`- Provider: ${summary.provider}`);
+  lines.push(`- Max frames: ${summary.maxFrames}`);
+  lines.push(`- Skip audio transcription: ${summary.skipAudioTranscription}`);
   lines.push("");
   lines.push("## Summary");
   lines.push("");
@@ -229,6 +236,7 @@ function buildMarkdownReport(
     lines.push(`- URL: ${result.url}`);
     if (result.analysisId) lines.push(`- Analysis ID: ${result.analysisId}`);
     if (result.error) lines.push(`- Error: ${result.error}`);
+    if (result.durationMs != null) lines.push(`- Runtime: ${(result.durationMs / 1000).toFixed(2)}s`);
     lines.push(`- Detected: ${result.detectedCount}`);
     lines.push(`- Presented: ${result.presentedCount} (${result.exactCount} exact / ${result.candidateCount} candidate / ${result.hiddenCount} hidden)`);
     lines.push("");
@@ -254,6 +262,9 @@ async function main(): Promise<void> {
   const datasetPathArg = process.argv[2] || "docs/evaluation-dataset.json";
   const datasetPath = path.resolve(process.cwd(), datasetPathArg);
   const outputDir = path.resolve(process.cwd(), "reports");
+  const provider = process.env.ANALYSIS_AI_PROVIDER || "gemini";
+  const maxFrames = Number(process.env.EVAL_MAX_FRAMES || 10);
+  const skipAudioTranscription = process.env.EVAL_SKIP_AUDIO_TRANSCRIPTION === "true";
 
   if (!fs.existsSync(datasetPath)) {
     throw new Error(
@@ -263,7 +274,6 @@ async function main(): Promise<void> {
 
   const dataset = loadDataset(datasetPath);
   const caseResults: CaseResult[] = [];
-  const provider = process.env.ANALYSIS_AI_PROVIDER || "gemini";
 
   console.log(`[baseline] Preflighting provider: ${provider}`);
   await checkAnalysisProviderHealth(provider);
@@ -271,7 +281,13 @@ async function main(): Promise<void> {
   for (const testCase of dataset.cases) {
     try {
       console.log(`\n[baseline] Running ${testCase.id}: ${testCase.url}`);
-      const response = await analyzeVideo({ videoUrl: testCase.url });
+      const startedAt = Date.now();
+      const response = await analyzeVideo({
+        videoUrl: testCase.url,
+        maxFramesOverride: maxFrames,
+        skipAudioTranscription,
+      });
+      const durationMs = Date.now() - startedAt;
       const analysisId = response.analysis?.id;
       const detectedProducts = analysisId
         ? await storage.getDetectedProducts(analysisId)
@@ -327,6 +343,7 @@ async function main(): Promise<void> {
           scoreExpectedAgainstCatalog,
           0.6,
         ),
+        durationMs,
         expectedProducts,
       });
     } catch (error: any) {
@@ -345,6 +362,7 @@ async function main(): Promise<void> {
         presentedMatchedCount: 0,
         exactMatchedCount: 0,
         catalogMatchedCount: 0,
+        durationMs: 0,
         expectedProducts: testCase.expectedProducts.map((expected) => ({
           expected,
           detectedMatch: null,
@@ -399,12 +417,22 @@ async function main(): Promise<void> {
     (sum, result) => sum + result.catalogMatchedCount,
     0,
   );
+  const averageDurationMs = completedCases.length
+    ? Math.round(
+        completedCases.reduce((sum, result) => sum + (result.durationMs || 0), 0) /
+          completedCases.length,
+      )
+    : 0;
 
   const summary = {
     dataset: dataset.name,
+    provider,
+    maxFrames,
+    skipAudioTranscription,
     casesRun: caseResults.length,
     casesFailed: caseResults.filter((result) => result.status === "failed").length,
     expectedProducts,
+    averageRuntimeSec: Math.round((averageDurationMs / 1000) * 10) / 10,
     detectionRecallPct: toPercent(detectedHits, expectedProducts),
     catalogRecallPct: toPercent(catalogHits, expectedProducts),
     presentedPrecisionPct: toPercent(presentedMatched, presentedProducts),

@@ -50,6 +50,13 @@ That requires:
 - optionally `OPENAI_VISION_MODEL`
 - optionally `OPENAI_TRANSCRIPTION_MODEL`
 
+For cheaper evaluation runs, set:
+
+- `EVAL_MAX_FRAMES=10`
+- `EVAL_SKIP_AUDIO_TRANSCRIPTION=true`
+
+Those settings reduce cost and are appropriate for smoke testing.
+
 ## Outputs
 
 The script writes:
