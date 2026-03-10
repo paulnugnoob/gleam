@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import "../server/loadEnv";
+import { checkAnalysisProviderHealth } from "../server/aiProvider";
 import { analyzeVideo } from "../server/analysis/videoAnalysisService";
 import { storage } from "../server/storage";
 import type { DetectedProduct, PresentedProduct } from "@shared/schema";
@@ -262,6 +263,10 @@ async function main(): Promise<void> {
 
   const dataset = loadDataset(datasetPath);
   const caseResults: CaseResult[] = [];
+  const provider = process.env.ANALYSIS_AI_PROVIDER || "gemini";
+
+  console.log(`[baseline] Preflighting provider: ${provider}`);
+  await checkAnalysisProviderHealth(provider);
 
   for (const testCase of dataset.cases) {
     try {

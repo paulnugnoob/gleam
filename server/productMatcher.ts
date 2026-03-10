@@ -223,6 +223,31 @@ function isBrandAvailable(brand: string | undefined): boolean {
   return AVAILABLE_BRANDS.has(normalized);
 }
 
+function passesMatchThreshold(
+  normalized: NormalizedProduct,
+  score: MatchScore,
+): boolean {
+  if (score.overall < 0.35) {
+    return false;
+  }
+
+  if (normalized.brandSlug) {
+    // If we think we know the brand, reject weak type-only matches.
+    if (score.brandMatch < 0.6 && score.nameMatch < 0.55) {
+      return false;
+    }
+
+    return score.overall >= 0.45;
+  }
+
+  // Without a brand, force stronger name alignment before surfacing a match.
+  if (score.nameMatch < 0.45) {
+    return false;
+  }
+
+  return score.overall >= 0.4;
+}
+
 export async function findBestMatches(
   normalized: NormalizedProduct,
   limit: number = 3,
@@ -273,7 +298,9 @@ export async function findBestMatches(
 
   scored.sort((a, b) => b.score.overall - a.score.overall);
 
-  return scored.slice(0, limit).filter((r) => r.score.overall > 0.1);
+  return scored
+    .filter((result) => passesMatchThreshold(normalized, result.score))
+    .slice(0, limit);
 }
 
 export async function matchProduct(

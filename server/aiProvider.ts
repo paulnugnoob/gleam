@@ -148,6 +148,47 @@ export async function runJsonCompletion<T>({
   };
 }
 
+export async function checkAnalysisProviderHealth(
+  provider = process.env.ANALYSIS_AI_PROVIDER,
+): Promise<AnalysisProvider> {
+  const selected = getProvider(provider);
+
+  if (selected === "openai") {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getOpenAiApiKey()}`,
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_VISION_MODEL || "gpt-4.1-mini",
+        max_completion_tokens: 5,
+        messages: [{ role: "user", content: "Reply with OK." }],
+      }),
+    });
+
+    if (!response.ok) {
+      const raw = await response.text();
+      throw new Error(
+        `OpenAI provider preflight failed: ${response.status} ${raw}`,
+      );
+    }
+
+    return selected;
+  }
+
+  const response = await gemini.models.generateContent({
+    model: process.env.GEMINI_ANALYSIS_MODEL || "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: "Reply with OK." }] }],
+  });
+
+  if (!response.text) {
+    throw new Error("Gemini provider preflight failed: empty response");
+  }
+
+  return selected;
+}
+
 export async function transcribeAudio({
   mimeType,
   data,
